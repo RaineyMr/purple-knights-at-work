@@ -13,7 +13,6 @@ import ForgotPassword from './pages/Auth/ForgotPassword';
 
 // Alumni Pages
 import AlumniDashboard from './pages/Alumni/Dashboard';
-import AlumniProfile from './pages/Alumni/Profile';
 import JobSearch from './pages/Alumni/JobSearch';
 import JobDetails from './pages/Alumni/JobDetails';
 import Applications from './pages/Alumni/Applications';
@@ -62,7 +61,6 @@ function App() {
           
           {/* Alumni Routes */}
           <Route path="dashboard" element={<AlumniDashboard />} />
-          <Route path="profile" element={<AlumniProfile />} />
           <Route path="jobs" element={<JobSearch />} />
           <Route path="jobs/:id" element={<JobDetails />} />
           <Route path="applications" element={<Applications />} />
