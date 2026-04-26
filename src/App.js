@@ -11,37 +11,19 @@ import Login from './pages/Auth/Login';
 import Signup from './pages/Auth/Signup';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 
-// Alumni Pages
-import AlumniDashboard from './pages/Alumni/Dashboard';
-import JobSearch from './pages/Alumni/JobSearch';
-import JobDetails from './pages/Alumni/JobDetails';
-import Applications from './pages/Alumni/Applications';
-import Messages from './pages/Alumni/Messages';
-import CareerProgress from './pages/Alumni/CareerProgress';
-
-// Employer Pages
-import EmployerDashboard from './pages/Employer/Dashboard';
-import EmployerProfile from './pages/Employer/Profile';
-import PostJob from './pages/Employer/PostJob';
-import ViewCandidates from './pages/Employer/ViewCandidates';
-import HiringPipeline from './pages/Employer/HiringPipeline';
-
-// Mentor Pages
-import MentorDashboard from './pages/Mentor/Dashboard';
-import MentorProfile from './pages/Mentor/Profile';
-import MenteeManagement from './pages/Mentor/MenteeManagement';
-
-// Admin Pages
-import AdminDashboard from './pages/Admin/Dashboard';
-import UserManagement from './pages/Admin/UserManagement';
-import JobModeration from './pages/Admin/JobModeration';
-import MentorMatching from './pages/Admin/MentorMatching';
-import AlumniVerification from './pages/Admin/AlumniVerification';
-
-// Shared Pages
-import Settings from './pages/Shared/Settings';
-import Notifications from './pages/Shared/Notifications';
-import Help from './pages/Shared/Help';
+// Main Pages (unified user experience)
+import Dashboard from './pages/Dashboard';
+import Feed from './pages/Feed';
+import JobBoard from './pages/JobBoard';
+import JobDetail from './pages/JobDetail';
+import UserProfile from './pages/UserProfile';
+import CompanyProfile from './pages/CompanyProfile';
+import Groups from './pages/Groups';
+import GroupDetail from './pages/GroupDetail';
+import Messages from './pages/Messages';
+import Applications from './pages/Applications';
+import PostJob from './pages/PostJob';
+import Settings from './pages/Settings';
 
 // Protected Route Component
 import ProtectedRoute from './components/Auth/ProtectedRoute';
@@ -59,37 +41,29 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           
-          {/* Alumni Routes */}
-          <Route path="dashboard" element={<AlumniDashboard />} />
-          <Route path="jobs" element={<JobSearch />} />
-          <Route path="jobs/:id" element={<JobDetails />} />
-          <Route path="applications" element={<Applications />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="career-progress" element={<CareerProgress />} />
+          {/* Main Routes */}
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="feed" element={<Feed />} />
           
-          {/* Employer Routes */}
-          <Route path="employer-dashboard" element={<EmployerDashboard />} />
-          <Route path="employer-profile" element={<EmployerProfile />} />
+          {/* Job Routes */}
+          <Route path="jobs" element={<JobBoard />} />
+          <Route path="jobs/:id" element={<JobDetail />} />
           <Route path="post-job" element={<PostJob />} />
-          <Route path="job/:id/candidates" element={<ViewCandidates />} />
-          <Route path="pipeline" element={<HiringPipeline />} />
+          <Route path="applications" element={<Applications />} />
           
-          {/* Mentor Routes */}
-          <Route path="mentor-dashboard" element={<MentorDashboard />} />
-          <Route path="mentor-profile" element={<MentorProfile />} />
-          <Route path="mentee/:id" element={<MenteeManagement />} />
+          {/* User & Company Routes */}
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="user/:id" element={<UserProfile />} />
+          <Route path="company/:id" element={<CompanyProfile />} />
           
-          {/* Admin Routes */}
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="admin/users" element={<UserManagement />} />
-          <Route path="admin/jobs" element={<JobModeration />} />
-          <Route path="admin/mentor-matching" element={<MentorMatching />} />
-          <Route path="admin/alumni-verification" element={<AlumniVerification />} />
+          {/* Groups/Networks Routes */}
+          <Route path="groups" element={<Groups />} />
+          <Route path="groups/:id" element={<GroupDetail />} />
           
-          {/* Shared Routes */}
+          {/* Messaging & Settings */}
+          <Route path="messages" element={<Messages />} />
+          <Route path="messages/:userId" element={<Messages />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="help" element={<Help />} />
         </Route>
         
         {/* Fallback */}
