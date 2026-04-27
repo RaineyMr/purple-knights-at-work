@@ -14,240 +14,184 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Database helper functions
+// Database helper functions - Updated for new schema
 export const db = {
-  // Profile functions
-  async getProfile(userId) {
+  // User functions
+  async getUser(userId) {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('id', userId)
       .single();
-    
     if (error) throw error;
     return data;
   },
 
-  async updateProfile(userId, updates) {
+  async updateUser(userId, updates) {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .update(updates)
       .eq('id', userId)
       .select()
       .single();
-    
     if (error) throw error;
     return data;
   },
 
-  // Skills functions
-  async getSkills(profileId) {
-    const { data, error } = await supabase
-      .from('alumni_skills')
-      .select('*')
-      .eq('profile_id', profileId)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
-  },
-
-  async addSkill(profileId, skill) {
-    const { data, error } = await supabase
-      .from('alumni_skills')
-      .insert({
-        profile_id: profileId,
-        ...skill,
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  },
-
-  async deleteSkill(skillId) {
-    const { error } = await supabase
-      .from('alumni_skills')
-      .delete()
-      .eq('id', skillId);
-    
-    if (error) throw error;
-  },
-
-  // Job postings functions
-  async getJobPostings(filters = {}) {
+  // Job functions
+  async getJobs(filters = {}) {
     let query = supabase
-      .from('job_postings')
-      .select('*')
-      .eq('status', 'open');
+      .from('jobs')
+      .select('*, company:companies(name, location), posted_by:users(first_name, last_name, profile_image_url)')
+      .eq('is_active', true);
 
-    // Apply filters
-    if (filters.industry) {
-      query = query.eq('industry', filters.industry);
-    }
-    if (filters.job_type) {
-      query = query.eq('job_type', filters.job_type);
-    }
-    if (filters.location) {
-      query = query.ilike('location', `%${filters.location}%`);
-    }
+    if (filters.company_id) query = query.eq('company_id', filters.company_id);
+    if (filters.job_type) query = query.eq('job_type', filters.job_type);
+    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
 
-    const { data, error } = await query
-      .order('posted_date', { ascending: false });
-    
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return data;
   },
 
-  async getJobPosting(jobId) {
+  async getJob(jobId) {
     const { data, error } = await supabase
-      .from('job_postings')
-      .select('*')
+      .from('jobs')
+      .select('*, company:companies(name, description, location), posted_by:users(first_name, last_name, profile_image_url, headline)')
       .eq('id', jobId)
       .single();
-    
     if (error) throw error;
     return data;
   },
 
-  async createJobPosting(job) {
+  async createJob(job) {
     const { data, error } = await supabase
-      .from('job_postings')
+      .from('jobs')
       .insert(job)
       .select()
       .single();
-    
     if (error) throw error;
     return data;
   },
 
-  // Applications functions
-  async getApplications(profileId) {
+  // Job Applications
+  async getApplications(userId) {
     const { data, error } = await supabase
-      .from('applications')
-      .select(`
-        *,
-        job_postings (
-          title,
-          company_name,
-          location
-        )
-      `)
-      .eq('profile_id', profileId)
-      .order('application_date', { ascending: false });
-    
+      .from('job_applications')
+      .select('*, job:jobs(title, location, job_type, company:companies(name))')
+      .eq('applicant_id', userId)
+      .order('applied_at', { ascending: false });
     if (error) throw error;
     return data;
   },
 
-  async createApplication(application) {
+  async createApplication(jobId, userId) {
     const { data, error } = await supabase
-      .from('applications')
-      .insert(application)
+      .from('job_applications')
+      .insert({ job_id: jobId, applicant_id: userId, status: 'applied' })
       .select()
       .single();
-    
     if (error) throw error;
     return data;
   },
 
-  // Matches functions
-  async getMatches(profileId) {
+  // Company functions
+  async getCompany(companyId) {
     const { data, error } = await supabase
-      .from('matches')
-      .select(`
-        *,
-        job_postings (
-          title,
-          company_name,
-          location,
-          salary_min,
-          salary_max
-        )
-      `)
-      .eq('profile_id', profileId)
-      .order('match_score', { ascending: false })
-      .limit(20);
-    
-    if (error) throw error;
-    return data;
-  },
-
-  async getJobMatches(jobId) {
-    const { data, error } = await supabase
-      .from('matches')
-      .select(`
-        *,
-        profiles (
-          first_name,
-          last_name,
-          headline,
-          graduation_year
-        )
-      `)
-      .eq('job_id', jobId)
-      .order('match_score', { ascending: false })
-      .limit(10);
-    
-    if (error) throw error;
-    return data;
-  },
-
-  // Messages functions
-  async getMessages(userId) {
-    const { data, error } = await supabase
-      .from('messages')
+      .from('companies')
       .select('*')
-      .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
-      .order('sent_at', { ascending: false });
-    
+      .eq('id', companyId)
+      .single();
     if (error) throw error;
     return data;
   },
 
-  async sendMessage(message) {
+  async getCompanyJobs(companyId) {
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*, posted_by:users(first_name, last_name, profile_image_url)')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  async getCompanyUsers(companyId) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('current_company_id', companyId)
+      .order('first_name', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+
+  // Messages
+  async getMessages(userId, otherUserId = null) {
+    let query = supabase
+      .from('messages')
+      .select('*, sender:users(first_name, last_name, profile_image_url), receiver:users(first_name, last_name, profile_image_url)')
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+
+    if (otherUserId) {
+      query = query.or(`sender_id.eq.${otherUserId},receiver_id.eq.${otherUserId}`);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+
+  async sendMessage(senderId, receiverId, content) {
     const { data, error } = await supabase
       .from('messages')
-      .insert(message)
+      .insert({ sender_id: senderId, receiver_id: receiverId, content, is_read: false })
       .select()
       .single();
-    
     if (error) throw error;
     return data;
   },
 
-  // Mentorship functions
-  async getMentorships(profileId) {
+  // Groups
+  async getGroups(userId) {
     const { data, error } = await supabase
-      .from('mentorship_records')
-      .select(`
-        *,
-        mentor:profiles!mentorship_records_mentor_id_fkey (
-          first_name,
-          last_name,
-          headline
-        ),
-        mentee:profiles!mentorship_records_mentee_id_fkey (
-          first_name,
-          last_name,
-          headline
-        )
-      `)
-      .or(`mentor_id.eq.${profileId},mentee_id.eq.${profileId}`)
-      .order('matched_date', { ascending: false });
-    
+      .from('user_groups')
+      .select('group:groups(*)')
+      .eq('user_id', userId);
+    if (error) throw error;
+    return data?.map(ug => ug.group);
+  },
+
+  async joinGroup(userId, groupId) {
+    const { data, error } = await supabase
+      .from('user_groups')
+      .insert({ user_id: userId, group_id: groupId })
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
 
-  // Analytics functions
-  async trackEvent(event) {
-    const { error } = await supabase
-      .from('analytics_events')
-      .insert(event);
-    
+  // Posts (job feed)
+  async getPosts(limit = 20) {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*, user:users(first_name, last_name, profile_image_url, current_company_id), job:jobs(title, company_id, location)')
+      .order('created_at', { ascending: false })
+      .limit(limit);
     if (error) throw error;
+    return data;
+  },
+
+  async createPost(userId, postType, jobId = null, content = null, fileUrl = null) {
+    const { data, error } = await supabase
+      .from('posts')
+      .insert({ user_id: userId, post_type: postType, job_id: jobId, content, file_url: fileUrl })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   },
 };
 

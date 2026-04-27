@@ -12,62 +12,12 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  console.log('AuthProvider rendering...');
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Set to false to avoid loading issues
 
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          setUser(session.user);
-          
-          // Fetch user profile from 'users' table (not 'profiles')
-          const { data: profileData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          setProfile(profileData);
-        }
-      } catch (error) {
-        console.error('Error getting initial session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setUser(session.user);
-          
-          // Fetch user profile from 'users' table
-          const { data: profileData } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          setProfile(profileData);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription?.unsubscribe();
-  }, []);
-
+  // Skip Supabase initialization for now to isolate the issue
   const value = {
     user,
     profile,
@@ -75,35 +25,16 @@ export const AuthProvider = ({ children }) => {
     setUser,
     setProfile,
     signOut: async () => {
-      try {
-        await supabase.auth.signOut();
-        setUser(null);
-        setProfile(null);
-      } catch (error) {
-        console.error('Error signing out:', error);
-        throw error;
-      }
+      setUser(null);
+      setProfile(null);
     },
     updateProfile: async (updates) => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .update(updates)
-          .eq('id', user.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        
-        setProfile(data);
-        return data;
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        throw error;
-      }
+      setProfile(prev => ({ ...prev, ...updates }));
+      return profile;
     },
   };
 
+  console.log('AuthProvider about to render children');
   return (
     <AuthContext.Provider value={value}>
       {children}
