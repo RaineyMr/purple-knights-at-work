@@ -106,6 +106,27 @@ export const db = {
     return data;
   },
 
+  async searchCompanies(searchTerm) {
+    const { data, error } = await supabase
+      .from('companies')
+      .select('*')
+      .ilike('name', `%${searchTerm}%`)
+      .order('name', { ascending: true })
+      .limit(10);
+    if (error) throw error;
+    return data;
+  },
+
+  async createCompany(company) {
+    const { data, error } = await supabase
+      .from('companies')
+      .insert(company)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
   async getCompanyJobs(companyId) {
     const { data, error } = await supabase
       .from('jobs')
