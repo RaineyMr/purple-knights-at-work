@@ -18,6 +18,7 @@ import {
   MagnifyingGlassIcon,
   NewspaperIcon,
   UserGroupIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 
 const Layout = () => {
@@ -37,7 +38,7 @@ const Layout = () => {
   };
 
   const getNavigationItems = () => {
-    return [
+    const baseItems = [
       { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, current: location.pathname === '/dashboard' },
       { name: 'Feed', href: '/feed', icon: NewspaperIcon, current: location.pathname === '/feed' },
       { name: 'Job Board', href: '/jobs', icon: BriefcaseIcon, current: location.pathname.startsWith('/jobs') },
@@ -48,6 +49,15 @@ const Layout = () => {
       { name: 'Profile', href: '/profile', icon: UserIcon, current: location.pathname === '/profile' },
       { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, current: location.pathname === '/settings' },
     ];
+
+    // Add admin section for admin users
+    if (isAdmin) {
+      baseItems.push(
+        { name: 'User Management', href: '/admin/users', icon: ShieldCheckIcon, current: location.pathname.startsWith('/admin') }
+      );
+    }
+
+    return baseItems;
   };
 
   const navigation = getNavigationItems();
