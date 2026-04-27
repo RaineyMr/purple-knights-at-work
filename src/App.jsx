@@ -39,7 +39,7 @@ function App() {
         
         {/* Protected Routes */}
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route index element={<Navigate to="/login" replace />} />
           
           {/* Main Routes */}
           <Route path="dashboard" element={<Dashboard />} />
