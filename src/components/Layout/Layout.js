@@ -7,7 +7,7 @@ import {
   UserIcon,
   BriefcaseIcon,
   DocumentTextIcon,
-  ChatBubbleLeftRightIcon,
+  ChatBubbleLeftIcon,
   ChartBarIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
@@ -16,6 +16,8 @@ import {
   UsersIcon,
   BellIcon,
   MagnifyingGlassIcon,
+  NewspaperIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 
 const Layout = () => {
@@ -35,45 +37,17 @@ const Layout = () => {
   };
 
   const getNavigationItems = () => {
-    const baseItems = [
+    return [
       { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, current: location.pathname === '/dashboard' },
-      { name: 'Profile', href: '/profile', icon: UserIcon, current: location.pathname === '/profile' },
-      { name: 'Jobs', href: '/jobs', icon: BriefcaseIcon, current: location.pathname.startsWith('/jobs') },
+      { name: 'Feed', href: '/feed', icon: NewspaperIcon, current: location.pathname === '/feed' },
+      { name: 'Job Board', href: '/jobs', icon: BriefcaseIcon, current: location.pathname.startsWith('/jobs') },
+      { name: 'Post Job', href: '/post-job', icon: BriefcaseIcon, current: location.pathname === '/post-job' },
       { name: 'Applications', href: '/applications', icon: DocumentTextIcon, current: location.pathname === '/applications' },
-      { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon, current: location.pathname === '/messages' },
-      { name: 'Career Progress', href: '/career-progress', icon: ChartBarIcon, current: location.pathname === '/career-progress' },
+      { name: 'Groups', href: '/groups', icon: UserGroupIcon, current: location.pathname === '/groups' },
+      { name: 'Messages', href: '/messages', icon: ChatBubbleLeftIcon, current: location.pathname === '/messages' },
+      { name: 'Profile', href: '/profile', icon: UserIcon, current: location.pathname === '/profile' },
+      { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, current: location.pathname === '/settings' },
     ];
-
-    if (isEmployer) {
-      return [
-        { name: 'Dashboard', href: '/employer-dashboard', icon: HomeIcon, current: location.pathname === '/employer-dashboard' },
-        { name: 'Company Profile', href: '/employer-profile', icon: BuildingOfficeIcon, current: location.pathname === '/employer-profile' },
-        { name: 'Post Job', href: '/post-job', icon: BriefcaseIcon, current: location.pathname === '/post-job' },
-        { name: 'Candidates', href: '/pipeline', icon: UsersIcon, current: location.pathname === '/pipeline' },
-        { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon, current: location.pathname === '/messages' },
-      ];
-    }
-
-    if (isMentor) {
-      return [
-        { name: 'Dashboard', href: '/mentor-dashboard', icon: HomeIcon, current: location.pathname === '/mentor-dashboard' },
-        { name: 'Profile', href: '/mentor-profile', icon: UserIcon, current: location.pathname === '/mentor-profile' },
-        { name: 'Mentees', href: '/mentees', icon: AcademicCapIcon, current: location.pathname === '/mentees' },
-        { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon, current: location.pathname === '/messages' },
-      ];
-    }
-
-    if (isAdmin) {
-      return [
-        { name: 'Admin Dashboard', href: '/admin', icon: HomeIcon, current: location.pathname === '/admin' },
-        { name: 'User Management', href: '/admin/users', icon: UsersIcon, current: location.pathname === '/admin/users' },
-        { name: 'Job Moderation', href: '/admin/jobs', icon: BriefcaseIcon, current: location.pathname === '/admin/jobs' },
-        { name: 'Alumni Verification', href: '/admin/alumni-verification', icon: UserIcon, current: location.pathname === '/admin/alumni-verification' },
-        { name: 'Mentor Matching', href: '/admin/mentor-matching', icon: AcademicCapIcon, current: location.pathname === '/admin/mentor-matching' },
-      ];
-    }
-
-    return baseItems;
   };
 
   const navigation = getNavigationItems();
@@ -209,10 +183,8 @@ const Layout = () => {
                     {getGreeting()}, {profile?.first_name || 'Purple Knight'}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {profile?.role === 'alumni' && `Class of ${profile?.graduation_year}`}
-                    {profile?.role === 'employer' && profile?.company_name}
-                    {profile?.role === 'mentor' && 'Mentor'}
-                    {profile?.role === 'admin' && 'Administrator'}
+                    {profile?.graduation_year ? `Class of ${profile.graduation_year}` : 'Current Student'}
+                    {profile?.company_name && ` • ${profile.company_name}`}
                   </div>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center">
