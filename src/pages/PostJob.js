@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 
 export default function PostJob() {
@@ -49,7 +49,7 @@ export default function PostJob() {
     }
     
     try {
-      const results = await supabase.searchCompanies(term);
+      const results = await db.searchCompanies(term);
       setSearchResults(results);
     } catch (error) {
       console.error('Error searching companies:', error);
@@ -65,7 +65,7 @@ export default function PostJob() {
 
     setLoading(true);
     try {
-      const company = await supabase.createCompany(newCompany);
+      const company = await db.createCompany(newCompany);
       setSelectedCompany(company);
       setShowCreateCompany(false);
       setStep(2);
@@ -146,7 +146,7 @@ export default function PostJob() {
         is_active: true
       };
 
-      await supabase.createJob(jobPayload);
+      await db.createJob(jobPayload);
       alert('Job posted successfully!');
       // Reset form
       setStep(1);

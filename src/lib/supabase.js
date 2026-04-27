@@ -41,28 +41,38 @@ export const db = {
 
   // Job functions
   async getJobs(filters = {}) {
-    let query = supabase
-      .from('jobs')
-      .select('*, company:companies(name, location), posted_by:users(first_name, last_name, profile_image_url)')
-      .eq('is_active', true);
-
-    if (filters.company_id) query = query.eq('company_id', filters.company_id);
-    if (filters.job_type) query = query.eq('job_type', filters.job_type);
-    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
+    // Use secure API instead of direct Supabase access
+    const { jobsAPI } = await import('../api/jobs');
+    const jobs = await jobsAPI.getJobs();
+    
+    // Apply filters if provided
+    let filteredJobs = jobs;
+    
+    if (filters.location) {
+      filteredJobs = filteredJobs.filter(job => 
+        job.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+    
+    if (filters.job_type) {
+      filteredJobs = filteredJobs.filter(job => 
+        job.job_type === filters.job_type
+      );
+    }
+    
+    return filteredJobs;
   },
 
   async getJob(jobId) {
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('*, company:companies(name, description, location), posted_by:users(first_name, last_name, profile_image_url, headline)')
-      .eq('id', jobId)
-      .single();
-    if (error) throw error;
-    return data;
+    // Use secure API instead of direct Supabase access
+    const { jobsAPI } = await import('../api/jobs');
+    const job = await jobsAPI.getJob(jobId);
+    
+    if (!job) {
+      throw new Error('Job not found');
+    }
+    
+    return job;
   },
 
   async createJob(job) {

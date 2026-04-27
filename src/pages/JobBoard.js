@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/supabase';
 
 export default function JobBoard() {
   const [jobs, setJobs] = useState([]);
@@ -21,7 +21,7 @@ export default function JobBoard() {
       if (filters.job_type) activeFilters.job_type = filters.job_type;
       if (filters.location) activeFilters.location = filters.location;
 
-      const jobData = await supabase.getJobs(activeFilters);
+      const jobData = await db.getJobs(activeFilters);
       setJobs(jobData);
     } catch (error) {
       console.error('Error fetching jobs:', error);

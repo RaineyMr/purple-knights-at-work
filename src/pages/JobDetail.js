@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 
 export default function JobDetail() {
@@ -17,7 +17,7 @@ export default function JobDetail() {
 
   const fetchJob = async () => {
     try {
-      const jobData = await supabase.getJob(id);
+      const jobData = await db.getJob(id);
       setJob(jobData);
     } catch (error) {
       console.error('Error fetching job:', error);
@@ -35,7 +35,7 @@ export default function JobDetail() {
 
     setApplying(true);
     try {
-      await supabase.createApplication(id, user.id);
+      await db.createApplication(id, user.id);
       alert('Application submitted successfully!');
     } catch (error) {
       console.error('Error applying for job:', error);

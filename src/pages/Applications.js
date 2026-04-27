@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { db } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Applications() {
@@ -15,7 +15,7 @@ export default function Applications() {
 
   const fetchApplications = async () => {
     try {
-      const applicationData = await supabase.getApplications(user.id);
+      const applicationData = await db.getApplications(user.id);
       setApplications(applicationData);
     } catch (error) {
       console.error('Error fetching applications:', error);
