@@ -12,12 +12,38 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  console.log('AuthProvider rendering...');
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(false); // Set to false to avoid loading issues
+  const [loading, setLoading] = useState(true);
 
-  // Skip Supabase initialization for now to isolate the issue
+  useEffect(() => {
+    // Get initial session
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+      }
+      setLoading(false);
+    };
+
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const value = {
     user,
     profile,
@@ -25,6 +51,7 @@ export const AuthProvider = ({ children }) => {
     setUser,
     setProfile,
     signOut: async () => {
+      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
     },
@@ -34,7 +61,6 @@ export const AuthProvider = ({ children }) => {
     },
   };
 
-  console.log('AuthProvider about to render children');
   return (
     <AuthContext.Provider value={value}>
       {children}
