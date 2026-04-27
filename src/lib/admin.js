@@ -134,7 +134,7 @@ export const adminUserManagement = {
 // Specific user management functions for common operations
 export const userOperations = {
   // Update Kevin's password (specific user)
-  async updateKevinPassword(newPassword = 'PK123') {
+  async updateKevinPassword(newPassword = 'PK12345') {
     const kevinUserId = 'a7893656-1eac-42b8-aeb0-d009209bc1ad';
     return await adminUserManagement.updateUserPassword(kevinUserId, newPassword);
   },
@@ -143,6 +143,87 @@ export const userOperations = {
   async getKevinInfo() {
     const kevinUserId = 'a7893656-1eac-42b8-aeb0-d009209bc1ad';
     return await adminUserManagement.getUserById(kevinUserId);
+  },
+
+  // Seed/Update demo user test@staug.com
+  async seedDemoUser(password = 'M0llySplaind#1') {
+    const demoEmail = 'test@staug.com';
+    
+    try {
+      // Check if user exists
+      const { data: users } = await supabaseAdmin.auth.admin.listUsers();
+      const existingUser = users.users.find(user => user.email === demoEmail);
+      
+      if (existingUser) {
+        // Update existing user
+        return await adminUserManagement.updateUserMetadata(existingUser.id, {
+          full_name: 'Molly Splaind',
+          role: 'alumni',
+          graduation_year: '2020',
+          major: 'Computer Science',
+          company_name: 'Tech Corp',
+          job_title: 'Software Engineer',
+          bio: 'Demo user for Purple Knights platform'
+        });
+      } else {
+        // Create new user
+        return await adminUserManagement.createUser(
+          demoEmail,
+          password,
+          {
+            full_name: 'Molly Splaind',
+            role: 'alumni',
+            graduation_year: '2020',
+            major: 'Computer Science',
+            company_name: 'Tech Corp',
+            job_title: 'Software Engineer',
+            bio: 'Demo user for Purple Knights platform'
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error seeding demo user:', error);
+      throw error;
+    }
+  },
+
+  // Update demo user password
+  async updateDemoUserPassword(newPassword = 'M0llySplaind#1') {
+    const demoEmail = 'test@staug.com';
+    
+    try {
+      // Find user by email
+      const { data: users } = await supabaseAdmin.auth.admin.listUsers();
+      const demoUser = users.users.find(user => user.email === demoEmail);
+      
+      if (!demoUser) {
+        throw new Error('Demo user not found');
+      }
+      
+      return await adminUserManagement.updateUserPassword(demoUser.id, newPassword);
+    } catch (error) {
+      console.error('Error updating demo user password:', error);
+      throw error;
+    }
+  },
+
+  // Get demo user info
+  async getDemoUserInfo() {
+    const demoEmail = 'test@staug.com';
+    
+    try {
+      const { data: users } = await supabaseAdmin.auth.admin.listUsers();
+      const demoUser = users.users.find(user => user.email === demoEmail);
+      
+      if (!demoUser) {
+        throw new Error('Demo user not found');
+      }
+      
+      return demoUser;
+    } catch (error) {
+      console.error('Error getting demo user info:', error);
+      throw error;
+    }
   }
 };
 
