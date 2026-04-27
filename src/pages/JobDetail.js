@@ -99,12 +99,17 @@ export default function JobDetail() {
               </div>
             </div>
             <div className="text-right">
-              {job.salary_min && job.salary_max && (
+              {job.salary_range && (
+                <p className="text-2xl font-bold text-green-600">
+                  {job.salary_range}
+                </p>
+              )}
+              {job.salary_min && job.salary_max && !job.salary_range && (
                 <p className="text-2xl font-bold text-green-600">
                   ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
                 </p>
               )}
-              {job.salary_min && !job.salary_max && (
+              {job.salary_min && !job.salary_max && !job.salary_range && (
                 <p className="text-2xl font-bold text-green-600">
                   ${job.salary_min.toLocaleString()}+
                 </p>
@@ -143,12 +148,12 @@ export default function JobDetail() {
         </div>
 
         {/* Skills */}
-        {job.required_skills && job.required_skills.length > 0 && (
+        {job.skills && job.skills.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Required Skills</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
             <div className="flex flex-wrap gap-2">
-              {job.required_skills.map((skill, index) => (
-                <span key={index} className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded">
+              {job.skills.map((skill, index) => (
+                <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded">
                   {skill}
                 </span>
               ))}
@@ -156,16 +161,40 @@ export default function JobDetail() {
           </div>
         )}
 
-        {job.preferred_skills && job.preferred_skills.length > 0 && (
+        {/* Responsibilities */}
+        {job.responsibilities && job.responsibilities.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Preferred Skills</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Responsibilities</h2>
             <div className="flex flex-wrap gap-2">
-              {job.preferred_skills.map((skill, index) => (
-                <span key={index} className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded">
-                  {skill}
+              {job.responsibilities.map((responsibility, index) => (
+                <span key={index} className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded">
+                  {responsibility}
                 </span>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Alumni Affiliation */}
+        {job.alumni_affiliation && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Alumni Affiliation</h2>
+            <p className="text-gray-700">{job.alumni_affiliation}</p>
+          </div>
+        )}
+
+        {/* Job URL */}
+        {job.url && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Job Posting URL</h2>
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {job.url}
+            </a>
           </div>
         )}
 

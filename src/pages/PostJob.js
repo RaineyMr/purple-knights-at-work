@@ -20,10 +20,15 @@ export default function PostJob() {
     remote_option: 'on_site',
     salary_min: '',
     salary_max: '',
+    salary_range: '',
+    url: '',
     required_skills: [],
     preferred_skills: [],
+    skills: [],
+    responsibilities: [],
     experience_level: 'entry_level',
     alumni_preferred: false,
+    alumni_affiliation: '',
     deadline: ''
   });
 
@@ -95,6 +100,15 @@ export default function PostJob() {
     }));
   };
 
+  // Handle responsibilities input
+  const handleResponsibilitiesChange = (field, value) => {
+    const responsibilities = value.split(',').map(item => item.trim()).filter(item => item);
+    setJobData(prev => ({
+      ...prev,
+      [field]: responsibilities
+    }));
+  };
+
   // Submit job
   const submitJob = async () => {
     if (!selectedCompany) {
@@ -111,7 +125,6 @@ export default function PostJob() {
     try {
       const jobPayload = {
         company_id: selectedCompany.id,
-        posted_by: user.id,
         title: jobData.title,
         description: jobData.description,
         job_type: jobData.job_type,
@@ -119,11 +132,17 @@ export default function PostJob() {
         remote_option: jobData.remote_option,
         salary_min: jobData.salary_min ? parseInt(jobData.salary_min) : null,
         salary_max: jobData.salary_max ? parseInt(jobData.salary_max) : null,
+        salary_range: jobData.salary_range || null,
+        url: jobData.url || null,
         required_skills: jobData.required_skills,
         preferred_skills: jobData.preferred_skills,
+        skills: jobData.skills,
+        responsibilities: jobData.responsibilities,
         experience_level: jobData.experience_level,
         alumni_preferred: jobData.alumni_preferred,
+        alumni_affiliation: jobData.alumni_affiliation || null,
         deadline: jobData.deadline ? new Date(jobData.deadline).toISOString() : null,
+        posted_at: new Date().toISOString(),
         is_active: true
       };
 
@@ -140,10 +159,15 @@ export default function PostJob() {
         remote_option: 'on_site',
         salary_min: '',
         salary_max: '',
+        salary_range: '',
+        url: '',
         required_skills: [],
         preferred_skills: [],
+        skills: [],
+        responsibilities: [],
         experience_level: 'entry_level',
         alumni_preferred: false,
+        alumni_affiliation: '',
         deadline: ''
       });
     } catch (error) {
@@ -418,16 +442,29 @@ export default function PostJob() {
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maximum Salary
+                Job URL
               </label>
               <input
-                type="number"
-                value={jobData.salary_max}
-                onChange={(e) => handleJobChange('salary_max', e.target.value)}
+                type="url"
+                value={jobData.url}
+                onChange={(e) => handleJobChange('url', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="e.g., 80000"
+                placeholder="https://example.com/job-posting"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Salary Range (text format)
+              </label>
+              <input
+                type="text"
+                value={jobData.salary_range}
+                onChange={(e) => handleJobChange('salary_range', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., $60k-$80k or Competitive"
               />
             </div>
 
@@ -458,14 +495,40 @@ export default function PostJob() {
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Skills (comma-separated)
+                Skills (comma-separated)
               </label>
               <input
                 type="text"
-                value={jobData.preferred_skills.join(', ')}
-                onChange={(e) => handleSkillsChange('preferred_skills', e.target.value)}
+                value={jobData.skills.join(', ')}
+                onChange={(e) => handleSkillsChange('skills', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="e.g., TypeScript, AWS, Docker"
+                placeholder="e.g., JavaScript, React, Node.js"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Responsibilities (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={jobData.responsibilities.join(', ')}
+                onChange={(e) => handleResponsibilitiesChange('responsibilities', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Develop features, Code review, Team collaboration"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Alumni Affiliation
+              </label>
+              <input
+                type="text"
+                value={jobData.alumni_affiliation}
+                onChange={(e) => handleJobChange('alumni_affiliation', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Purple Knights Alumni Network"
               />
             </div>
 

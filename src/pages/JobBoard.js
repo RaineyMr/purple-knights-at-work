@@ -123,12 +123,17 @@ export default function JobBoard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  {job.salary_min && job.salary_max && (
+                  {job.salary_range && (
+                    <p className="text-lg font-semibold text-green-600">
+                      {job.salary_range}
+                    </p>
+                  )}
+                  {job.salary_min && job.salary_max && !job.salary_range && (
                     <p className="text-lg font-semibold text-green-600">
                       ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
                     </p>
                   )}
-                  {job.salary_min && !job.salary_max && (
+                  {job.salary_min && !job.salary_max && !job.salary_range && (
                     <p className="text-lg font-semibold text-green-600">
                       ${job.salary_min.toLocaleString()}+
                     </p>
@@ -161,21 +166,41 @@ export default function JobBoard() {
                 </div>
               </div>
 
-              {job.required_skills && job.required_skills.length > 0 && (
+              {job.skills && job.skills.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Required Skills:</p>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Skills:</p>
                   <div className="flex flex-wrap gap-2">
-                    {job.required_skills.slice(0, 5).map((skill, index) => (
+                    {job.skills.slice(0, 5).map((skill, index) => (
                       <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
                         {skill}
                       </span>
                     ))}
-                    {job.required_skills.length > 5 && (
+                    {job.skills.length > 5 && (
                       <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                        +{job.required_skills.length - 5} more
+                        +{job.skills.length - 5} more
                       </span>
                     )}
                   </div>
+                </div>
+              )}
+
+              {job.alumni_affiliation && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Alumni Affiliation:</p>
+                  <p className="text-sm text-gray-600">{job.alumni_affiliation}</p>
+                </div>
+              )}
+
+              {job.url && (
+                <div className="mt-4">
+                  <a
+                    href={job.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    View Job Posting →
+                  </a>
                 </div>
               )}
             </div>
