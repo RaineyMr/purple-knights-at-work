@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -25,9 +25,9 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           
-          // Fetch user profile
+          // Fetch user profile from 'users' table (not 'profiles')
           const { data: profileData } = await supabase
-            .from('profiles')
+            .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single();
@@ -49,9 +49,9 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           
-          // Fetch user profile
+          // Fetch user profile from 'users' table
           const { data: profileData } = await supabase
-            .from('profiles')
+            .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single();
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   const value = {
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     updateProfile: async (updates) => {
       try {
         const { data, error } = await supabase
-          .from('profiles')
+          .from('users')
           .update(updates)
           .eq('id', user.id)
           .select()
@@ -102,11 +102,6 @@ export const AuthProvider = ({ children }) => {
         throw error;
       }
     },
-    isAlumni: profile?.role === 'alumni',
-    isEmployer: profile?.role === 'employer',
-    isMentor: profile?.role === 'mentor',
-    isAdmin: profile?.role === 'admin',
-    isVerifiedAlumni: profile?.role === 'alumni' && profile?.verified_alumni,
   };
 
   return (
