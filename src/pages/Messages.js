@@ -1,93 +1,113 @@
-import React, { useState } from 'react';
-import { MagnifyingGlassIcon, PaperAirplaneIcon, PhoneIcon, VideoCameraIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { MagnifyingGlassIcon, PaperAirplaneIcon, PhoneIcon, VideoCameraIcon, EllipsisHorizontalIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { PaperAirplaneIcon as PaperAirplaneSolidIcon } from '@heroicons/react/24/solid';
+import { useAuth } from '../hooks/useAuth';
+import { db, supabase } from '../lib/supabase';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 export default function Messages() {
+  const { user } = useAuth();
+  const analytics = useAnalytics();
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messageInput, setMessageInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-
-  const conversations = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      avatar: 'SJ',
-      role: 'Software Engineer at Google',
-      lastMessage: 'That sounds great! Let me know when you\'re free to chat more.',
-      time: '2 hours ago',
-      unread: 2,
-      online: true,
-      messages: [
-        { id: 1, sender: 'other', text: 'Hey! I saw your post about the software engineering position', time: '3 hours ago' },
-        { id: 2, sender: 'me', text: 'Hi Sarah! Yes, I\'m really interested in learning more about it', time: '3 hours ago' },
-        { id: 3, sender: 'other', text: 'That sounds great! Let me know when you\'re free to chat more.', time: '2 hours ago' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Michael Chen',
-      avatar: 'MC',
-      role: 'Class of 2020',
-      lastMessage: 'Thanks for connecting! Looking forward to collaborating.',
-      time: '1 day ago',
-      unread: 0,
-      online: false,
-      messages: [
-        { id: 1, sender: 'other', text: 'Hi! I\'m Michael from the Class of 2020', time: '2 days ago' },
-        { id: 2, sender: 'me', text: 'Nice to meet you Michael! What are you up to these days?', time: '2 days ago' },
-        { id: 3, sender: 'other', text: 'I\'m working at a fintech startup. How about you?', time: '2 days ago' },
-        { id: 4, sender: 'me', text: 'That\'s awesome! I\'m still in school, studying computer science', time: '1 day ago' },
-        { id: 5, sender: 'other', text: 'Thanks for connecting! Looking forward to collaborating.', time: '1 day ago' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Emily Rodriguez',
-      avatar: 'ER',
-      role: 'Product Manager at Microsoft',
-      lastMessage: 'The meetup was amazing! Let\'s do it again soon.',
-      time: '3 days ago',
-      unread: 0,
-      online: true,
-      messages: [
-        { id: 1, sender: 'other', text: 'Are you coming to the Seattle meetup next week?', time: '4 days ago' },
-        { id: 2, sender: 'me', text: 'Yes! I\'ll be there. Looking forward to it!', time: '4 days ago' },
-        { id: 3, sender: 'other', text: 'Great! See you there!', time: '3 days ago' },
-        { id: 4, sender: 'me', text: 'The meetup was amazing! So many great connections', time: '3 days ago' },
-        { id: 5, sender: 'other', text: 'The meetup was amazing! Let\'s do it again soon.', time: '3 days ago' }
-      ]
-    },
-    {
-      id: 4,
-      name: 'David Kim',
-      avatar: 'DK',
-      role: 'Entrepreneur & Startup Founder',
-      lastMessage: 'Would love to get your feedback on our new product',
-      time: '1 week ago',
-      unread: 1,
-      online: false,
-      messages: [
-        { id: 1, sender: 'other', text: 'Hi! I heard you\'re interested in startups', time: '1 week ago' },
-        { id: 2, sender: 'me', text: 'Yes! I\'m always excited to learn about new ventures', time: '1 week ago' },
-        { id: 3, sender: 'other', text: 'Would love to get your feedback on our new product', time: '1 week ago' }
-      ]
-    },
-    {
-      id: 5,
-      name: 'Lisa Thompson',
-      avatar: 'LT',
-      role: 'Marketing Director',
-      lastMessage: 'Let me know if you need any career advice!',
-      time: '2 weeks ago',
-      unread: 0,
-      online: true,
-      messages: [
-        { id: 1, sender: 'other', text: 'Welcome to the Purple Knights network!', time: '2 weeks ago' },
-        { id: 2, sender: 'me', text: 'Thank you! Excited to be here', time: '2 weeks ago' },
-        { id: 3, sender: 'other', text: 'Let me know if you need any career advice!', time: '2 weeks ago' }
-      ]
+  const [conversations, setConversations] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (user) {
+      fetchConversations();
+      setupRealtimeSubscription();
     }
-  ];
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation);
+    }
+  }, [selectedConversation]);
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+      // Get all messages involving the current user
+      const allMessages = await db.getMessages(user.id);
+      
+      // Group messages by conversation partner
+      const conversationMap = new Map();
+      
+      allMessages.forEach(message => {
+        const otherUserId = message.from_user_id === user.id ? message.to_user_id : message.from_user_id;
+        const otherUser = message.from_user_id === user.id ? message.receiver : message.sender;
+        
+        if (!conversationMap.has(otherUserId)) {
+          conversationMap.set(otherUserId, {
+            id: otherUserId,
+            name: `${otherUser?.first_name || 'Unknown'} ${otherUser?.last_name || 'User'}`,
+            avatar: `${otherUser?.first_name?.[0] || 'U'}${otherUser?.last_name?.[0] || ''}`,
+            role: otherUser?.headline || 'Purple Knight',
+            lastMessage: message.body,
+            time: formatTime(message.sent_at),
+            unread: message.to_user_id === user.id && !message.read_at ? 1 : 0,
+            online: Math.random() > 0.5, // Random online status for demo
+            messages: []
+          });
+        }
+        
+        // Update last message and unread count
+        const conv = conversationMap.get(otherUserId);
+        if (new Date(message.sent_at) > new Date(conv.lastMessageTime || '1970-01-01')) {
+          conv.lastMessage = message.body;
+          conv.lastMessageTime = message.sent_at;
+          conv.time = formatTime(message.sent_at);
+        }
+        
+        if (message.to_user_id === user.id && !message.read_at) {
+          conv.unread++;
+        }
+      });
+      
+      setConversations(Array.from(conversationMap.values()));
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMessages = async (conversationId) => {
+    try {
+      const conversationMessages = await db.getMessages(user.id, conversationId);
+      setMessages(conversationMessages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    // Subscribe to new messages
+    const subscription = supabase
+      .channel('messages_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `from_user_id=eq.${user.id},to_user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('New message:', payload);
+          fetchConversations();
+          if (selectedConversation) {
+            fetchMessages(selectedConversation);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => subscription.unsubscribe();
+  };
 
   const filteredConversations = conversations.filter(conv =>
     conv.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,16 +116,46 @@ export default function Messages() {
 
   const currentConversation = conversations.find(conv => conv.id === selectedConversation) || conversations[0];
 
-  const handleSendMessage = () => {
-    if (messageInput.trim() && selectedConversation) {
-      // In a real app, this would send the message to the server
-      console.log('Sending message:', messageInput);
-      setMessageInput('');
+  const handleSendMessage = async () => {
+    if (messageInput.trim() && selectedConversation && user) {
+      try {
+        const newMessage = await db.sendMessage(
+          user.id,
+          selectedConversation,
+          'New message',
+          messageInput.trim(),
+          'direct_message'
+        );
+        
+        // Track analytics
+        await analytics.trackMessage(newMessage.id, selectedConversation);
+        
+        // Clear input and refresh messages
+        setMessageInput('');
+        fetchMessages(selectedConversation);
+        fetchConversations();
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
     }
   };
 
-  const formatTime = (timeString) => {
-    return timeString;
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return date.toLocaleDateString();
   };
 
   return (
@@ -127,7 +177,17 @@ export default function Messages() {
         </div>
 
         <div className="overflow-y-auto h-[calc(100%-8rem)]">
-          {filteredConversations.map(conversation => (
+          {loading ? (
+            <div className="p-4 text-center">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+              <p className="mt-2 text-sm text-gray-500">Loading conversations...</p>
+            </div>
+          ) : filteredConversations.length === 0 ? (
+            <div className="p-4 text-center">
+              <p className="text-gray-500">No conversations found</p>
+            </div>
+          ) : (
+            filteredConversations.map(conversation => (
             <div
               key={conversation.id}
               onClick={() => setSelectedConversation(conversation.id)}
@@ -159,7 +219,8 @@ export default function Messages() {
                 )}
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -202,27 +263,33 @@ export default function Messages() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {currentConversation.messages.map(message => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      message.sender === 'me'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <p className={`text-xs mt-1 ${
-                      message.sender === 'me' ? 'text-purple-200' : 'text-gray-500'
-                    }`}>
-                      {formatTime(message.time)}
-                    </p>
-                  </div>
+              {messages.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No messages yet. Start the conversation!</p>
                 </div>
-              ))}
+              ) : (
+                messages.map(message => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.from_user_id === user.id ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        message.from_user_id === user.id
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <p className="text-sm">{message.body}</p>
+                      <p className={`text-xs mt-1 ${
+                        message.from_user_id === user.id ? 'text-purple-200' : 'text-gray-500'
+                      }`}>
+                        {formatTime(message.sent_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Message Input */}

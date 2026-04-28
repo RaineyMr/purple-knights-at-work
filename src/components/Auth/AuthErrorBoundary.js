@@ -42,9 +42,9 @@ class AuthErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      const isAuthError = isAuthError(this.state.error);
+      const isAuthRelatedError = isAuthError(this.state.error);
 
-      if (isAuthError) {
+      if (isAuthRelatedError) {
         return (
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
