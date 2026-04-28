@@ -85,9 +85,9 @@ export default function Messages() {
   };
 
   const setupRealtimeSubscription = () => {
-    // Subscribe to new messages
+    // Subscribe to new messages with unique channel name
     const subscription = supabase
-      .channel('messages_changes')
+      .channel(`messages_chat_${user.id}`)
       .on(
         'postgres_changes',
         {

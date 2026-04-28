@@ -33,9 +33,10 @@ export const useRealtime = (table, userId, filters = {}) => {
   useEffect(() => {
     fetchData();
 
-    // Set up real-time subscription
+    // Set up real-time subscription with unique channel name
+    const channelName = userId ? `${table}_changes_${userId}` : `${table}_changes`;
     const subscription = supabase
-      .channel(`${table}_changes`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -102,10 +103,10 @@ export const useRealtimeAnalytics = (userId) => {
 
     fetchAnalytics();
 
-    // Listen for changes in relevant tables
+    // Listen for changes in relevant tables with unique channel names
     const subscriptions = [
       supabase
-        .channel('analytics_events_changes')
+        .channel(`analytics_events_changes_${userId}`)
         .on(
           'postgres_changes',
           {
@@ -119,7 +120,7 @@ export const useRealtimeAnalytics = (userId) => {
         .subscribe(),
       
       supabase
-        .channel('applications_changes')
+        .channel(`applications_changes_${userId}`)
         .on(
           'postgres_changes',
           {
@@ -133,7 +134,7 @@ export const useRealtimeAnalytics = (userId) => {
         .subscribe(),
       
       supabase
-        .channel('messages_changes')
+        .channel(`messages_analytics_${userId}`)
         .on(
           'postgres_changes',
           {
