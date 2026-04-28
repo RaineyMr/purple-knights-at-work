@@ -144,6 +144,146 @@ export const db = {
         alumni_affiliation: 'Purple Knights Alumni Network',
         created_at: new Date(Date.now() - 432000000).toISOString(),
         url: 'https://example.com/job5'
+      },
+      {
+        id: '6',
+        title: 'Data Scientist',
+        description: 'We are seeking a talented data scientist to join our analytics team. You will work on machine learning models, data analysis, and predictive analytics.',
+        company: {
+          name: 'Data Insights Corp',
+          logo_url: null,
+          website: 'https://datainsights.com'
+        },
+        location: 'Remote',
+        job_type: 'full_time',
+        remote_option: 'fully_remote',
+        salary_range: '$100k-$140k',
+        experience_level: 'senior_level',
+        skills: ['Python', 'Machine Learning', 'SQL', 'Data Visualization'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        created_at: new Date(Date.now() - 518400000).toISOString(),
+        url: 'https://example.com/job6'
+      },
+      {
+        id: '7',
+        title: 'Mobile App Developer',
+        description: 'Looking for an experienced mobile developer to create and maintain our iOS and Android applications. React Native experience preferred.',
+        company: {
+          name: 'Mobile First Tech',
+          logo_url: null,
+          website: 'https://mobilefirst.com'
+        },
+        location: 'Seattle, WA',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_range: '$90k-$130k',
+        experience_level: 'mid_level',
+        skills: ['React Native', 'iOS', 'Android', 'JavaScript'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        created_at: new Date(Date.now() - 604800000).toISOString(),
+        url: 'https://example.com/job7'
+      },
+      {
+        id: '8',
+        title: 'Project Manager',
+        description: 'Join our team as a project manager to oversee software development projects. Experience with agile methodologies required.',
+        company: {
+          name: 'Tech Solutions Inc',
+          logo_url: null,
+          website: 'https://techsolutions.com'
+        },
+        location: 'Chicago, IL',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_range: '$85k-$115k',
+        experience_level: 'mid_level',
+        skills: ['Project Management', 'Agile', 'Scrum', 'Leadership'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        created_at: new Date(Date.now() - 691200000).toISOString(),
+        url: 'https://example.com/job8'
+      },
+      {
+        id: '9',
+        title: 'UI/UX Designer',
+        description: 'We are looking for a creative UI/UX designer to join our design team. You will work on user interfaces, user experience, and design systems.',
+        company: {
+          name: 'Design Studio Pro',
+          logo_url: null,
+          website: 'https://designstudio.com'
+        },
+        location: 'Los Angeles, CA',
+        job_type: 'contract',
+        remote_option: 'fully_remote',
+        salary_range: '$70k-$90k',
+        experience_level: 'mid_level',
+        skills: ['Figma', 'Adobe XD', 'Prototyping', 'User Research'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        created_at: new Date(Date.now() - 777600000).toISOString(),
+        url: 'https://example.com/job9'
+      },
+      {
+        id: '10',
+        title: 'Backend Developer',
+        description: 'Seeking a skilled backend developer to build and maintain server-side applications. Experience with Node.js and databases required.',
+        company: {
+          name: 'Server Side Systems',
+          logo_url: null,
+          website: 'https://serverside.com'
+        },
+        location: 'Denver, CO',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_range: '$85k-$120k',
+        experience_level: 'mid_level',
+        skills: ['Node.js', 'Express', 'MongoDB', 'PostgreSQL'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        created_at: new Date(Date.now() - 864000000).toISOString(),
+        url: 'https://example.com/job10'
+      },
+      {
+        id: '11',
+        title: 'DevOps Engineer',
+        description: 'Join our infrastructure team to manage cloud deployments, CI/CD pipelines, and system monitoring.',
+        company: {
+          name: 'Cloud Infrastructure Co',
+          logo_url: null,
+          website: 'https://cloudinfra.com'
+        },
+        location: 'Austin, TX',
+        job_type: 'full_time',
+        remote_option: 'fully_remote',
+        salary_range: '$95k-$135k',
+        experience_level: 'senior_level',
+        skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        created_at: new Date(Date.now() - 950400000).toISOString(),
+        url: 'https://example.com/job11'
+      },
+      {
+        id: '12',
+        title: 'Quality Assurance Engineer',
+        description: 'We need a QA engineer to ensure our software meets quality standards through testing and quality control processes.',
+        company: {
+          name: 'Quality First Tech',
+          logo_url: null,
+          website: 'https://qualityfirst.com'
+        },
+        location: 'Portland, OR',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_range: '$70k-$95k',
+        experience_level: 'mid_level',
+        skills: ['Testing', 'Automation', 'Selenium', 'Quality Assurance'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        created_at: new Date(Date.now() - 1036800000).toISOString(),
+        url: 'https://example.com/job12'
       }
     ];
     
