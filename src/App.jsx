@@ -7,7 +7,7 @@ import { AuthErrorHandler } from './components/Auth/AuthErrorHandler';
 import AuthErrorBoundary from './components/Auth/AuthErrorBoundary';
 
 // Layout Components
-import Layout from './components/Layout/Layout';
+import Layout from './components/Layout/Layout.jsx';
 import AuthLayout from './components/Layout/AuthLayout';
 
 // Auth Pages
