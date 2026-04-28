@@ -16,7 +16,7 @@ import Signup from './pages/Auth/Signup.jsx';
 import ForgotPassword from './pages/Auth/ForgotPassword.jsx';
 
 // Main Pages (unified user experience)
-import Dashboard from './pages/Dashboard-simple.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 import JobBoard from './pages/JobBoard.jsx';
 import JobDetail from './pages/JobDetail.jsx';
 import UserProfile from './pages/UserProfile.jsx';
