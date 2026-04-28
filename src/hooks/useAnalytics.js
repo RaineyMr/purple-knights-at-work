@@ -52,9 +52,12 @@ export const useAnalytics = () => {
 
 // Higher-order component for automatic tracking
 export const withAnalytics = (WrappedComponent) => {
-  return function WithAnalyticsComponent(props) {
+  function WithAnalyticsComponent(props) {
     const analytics = useAnalytics();
-    
     return <WrappedComponent {...props} analytics={analytics} />;
-  };
+  }
+  
+  WithAnalyticsComponent.displayName = `WithAnalytics(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+  
+  return WithAnalyticsComponent;
 };
