@@ -16,18 +16,18 @@ import Signup from './pages/Auth/Signup.jsx';
 import ForgotPassword from './pages/Auth/ForgotPassword.jsx';
 
 // Main Pages (unified user experience)
-import Dashboard from './pages/Dashboard.jsx';
-import Feed from './pages/Feed.jsx';
-import JobBoard from './pages/JobBoard.jsx';
-import JobDetail from './pages/JobDetail.jsx';
-import UserProfile from './pages/UserProfile.jsx';
-import CompanyProfile from './pages/CompanyProfile.jsx';
-import Groups from './pages/Groups.jsx';
-import GroupDetail from './pages/GroupDetail.jsx';
+import Dashboard from './pages/Dashboard.js';
+import Feed from './pages/Feed.js';
+import JobBoard from './pages/JobBoard.js';
+import JobDetail from './pages/JobDetail.js';
+import UserProfile from './pages/UserProfile.js';
+import CompanyProfile from './pages/CompanyProfile.js';
+import Groups from './pages/Groups.js';
+import GroupDetail from './pages/GroupDetail.js';
 import Messages from './pages/Messages.jsx';
-import Applications from './pages/Applications.jsx';
-import PostJob from './pages/PostJob.jsx';
-import Settings from './pages/Settings.jsx';
+import Applications from './pages/Applications.js';
+import PostJob from './pages/PostJob.js';
+import Settings from './pages/Settings.js';
 
 // Protected Route Component
 import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
