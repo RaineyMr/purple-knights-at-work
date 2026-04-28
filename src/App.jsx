@@ -1,36 +1,36 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext.jsx';
 
 // Auth Error Handler
-import { AuthErrorHandler } from './components/Auth/AuthErrorHandler';
-import AuthErrorBoundary from './components/Auth/AuthErrorBoundary';
+import { AuthErrorHandler } from './components/Auth/AuthErrorHandler.jsx';
+import AuthErrorBoundary from './components/Auth/AuthErrorBoundary.jsx';
 
 // Layout Components
 import Layout from './components/Layout/Layout.jsx';
-import AuthLayout from './components/Layout/AuthLayout';
+import AuthLayout from './components/Layout/AuthLayout.jsx';
 
 // Auth Pages
-import Login from './pages/Auth/Login';
-import Signup from './pages/Auth/Signup';
-import ForgotPassword from './pages/Auth/ForgotPassword';
+import Login from './pages/Auth/Login.jsx';
+import Signup from './pages/Auth/Signup.jsx';
+import ForgotPassword from './pages/Auth/ForgotPassword.jsx';
 
 // Main Pages (unified user experience)
-import Dashboard from './pages/Dashboard';
-import Feed from './pages/Feed';
-import JobBoard from './pages/JobBoard';
-import JobDetail from './pages/JobDetail';
-import UserProfile from './pages/UserProfile';
-import CompanyProfile from './pages/CompanyProfile';
-import Groups from './pages/Groups';
-import GroupDetail from './pages/GroupDetail';
-import Messages from './pages/Messages';
-import Applications from './pages/Applications';
-import PostJob from './pages/PostJob';
-import Settings from './pages/Settings';
+import Dashboard from './pages/Dashboard.jsx';
+import Feed from './pages/Feed.jsx';
+import JobBoard from './pages/JobBoard.jsx';
+import JobDetail from './pages/JobDetail.jsx';
+import UserProfile from './pages/UserProfile.jsx';
+import CompanyProfile from './pages/CompanyProfile.jsx';
+import Groups from './pages/Groups.jsx';
+import GroupDetail from './pages/GroupDetail.jsx';
+import Messages from './pages/Messages.jsx';
+import Applications from './pages/Applications.jsx';
+import PostJob from './pages/PostJob.jsx';
+import Settings from './pages/Settings.jsx';
 
 // Protected Route Component
-import ProtectedRoute from './components/Auth/ProtectedRoute';
+import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
 
 function App() {
   return (
