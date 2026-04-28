@@ -23,6 +23,9 @@ export default function UserProfile() {
   const [education, setEducation] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -95,6 +98,59 @@ export default function UserProfile() {
     }
   };
 
+  const handleEditClick = () => {
+    setEditForm({
+      first_name: profile.first_name || '',
+      last_name: profile.last_name || '',
+      headline: profile.headline || '',
+      bio: profile.bio || '',
+      location: profile.location || '',
+      phone: profile.phone || '',
+      linkedin_url: profile.linkedin_url || '',
+      portfolio_url: profile.portfolio_url || '',
+      graduation_year: profile.graduation_year || '',
+      allow_employer_contact: profile.allow_employer_contact || false
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Convert graduation_year to number if provided
+      const updateData = { ...editForm };
+      if (editForm.graduation_year && editForm.graduation_year !== '') {
+        updateData.graduation_year = parseInt(editForm.graduation_year);
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      setProfile(prev => ({ ...prev, ...updateData }));
+      setIsEditing(false);
+      
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({});
+  };
+
+  const handleInputChange = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -145,6 +201,27 @@ export default function UserProfile() {
     <div className="max-w-4xl mx-auto">
       {/* Profile Header */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        {isEditing && (
+          <div className="flex justify-end mb-4">
+            <div className="flex space-x-2">
+              <button
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium disabled:opacity-50"
+                title="Save Changes"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
+                title="Cancel"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-6">
             <div className="h-24 w-24 rounded-full bg-purple-600 flex items-center justify-center">
@@ -153,70 +230,164 @@ export default function UserProfile() {
               </span>
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">{profile.first_name} {profile.last_name}</h1>
-              <p className="text-lg text-gray-600 mt-1">{profile.headline || 'Purple Knight Alumnus'}</p>
-              <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                {profile.location && (
-                  <div className="flex items-center space-x-1">
-                    <MapPinIcon className="h-4 w-4" />
-                    <span>{profile.location}</span>
+              {isEditing ? (
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="text"
+                      value={editForm.first_name}
+                      onChange={(e) => handleInputChange('first_name', e.target.value)}
+                      className="text-2xl font-bold text-gray-900 bg-transparent border-b-2 border-purple-300 focus:border-purple-500 outline-none"
+                      placeholder="First Name"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.last_name}
+                      onChange={(e) => handleInputChange('last_name', e.target.value)}
+                      className="text-2xl font-bold text-gray-900 bg-transparent border-b-2 border-purple-300 focus:border-purple-500 outline-none"
+                      placeholder="Last Name"
+                    />
                   </div>
-                )}
-                {profile.graduation_year && (
-                  <div className="flex items-center space-x-1">
-                    <CalendarIcon className="h-4 w-4" />
-                    <span>Class of {profile.graduation_year}</span>
+                  <input
+                    type="text"
+                    value={editForm.headline}
+                    onChange={(e) => handleInputChange('headline', e.target.value)}
+                    className="text-lg text-gray-600 bg-transparent border-b border-purple-300 focus:border-purple-500 outline-none w-full"
+                    placeholder="e.g. Software Engineer at Tech Company"
+                  />
+                  <div className="flex items-center space-x-4">
+                    <input
+                      type="text"
+                      value={editForm.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      className="text-sm text-gray-500 bg-transparent border-b border-purple-300 focus:border-purple-500 outline-none"
+                      placeholder="Location"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.graduation_year}
+                      onChange={(e) => handleInputChange('graduation_year', e.target.value)}
+                      className="text-sm text-gray-500 bg-transparent border-b border-purple-300 focus:border-purple-500 outline-none w-24"
+                      placeholder="Year"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="text-sm text-purple-600 bg-transparent border-b border-purple-300 focus:border-purple-500 outline-none"
+                      placeholder="Phone"
+                    />
                   </div>
-                )}
-                <div className="flex items-center space-x-1">
-                  <AcademicCapIcon className="h-4 w-4" />
-                  <span>Verified Alumni: {profile.verified_alumni ? 'Yes' : 'No'}</span>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4 mt-4">
-                <a href={`mailto:${user.email}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
-                  <EnvelopeIcon className="h-4 w-4" />
-                  <span className="text-sm">{user.email}</span>
-                </a>
-                {profile.phone && (
-                  <a href={`tel:${profile.phone}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
-                    <PhoneIcon className="h-4 w-4" />
-                    <span className="text-sm">{profile.phone}</span>
-                  </a>
-                )}
-              </div>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold text-gray-900">{profile.first_name} {profile.last_name}</h1>
+                  <p className="text-lg text-gray-600 mt-1">{profile.headline || 'Purple Knight Alumnus'}</p>
+                  <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                    {profile.location && (
+                      <div className="flex items-center space-x-1">
+                        <MapPinIcon className="h-4 w-4" />
+                        <span>{profile.location}</span>
+                      </div>
+                    )}
+                    {profile.graduation_year && (
+                      <div className="flex items-center space-x-1">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span>Class of {profile.graduation_year}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-1">
+                      <AcademicCapIcon className="h-4 w-4" />
+                      <span>Verified Alumni: {profile.verified_alumni ? 'Yes' : 'No'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4 mt-4">
+                    <a href={`mailto:${user.email}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
+                      <EnvelopeIcon className="h-4 w-4" />
+                      <span className="text-sm">{user.email}</span>
+                    </a>
+                    {profile.phone && (
+                      <a href={`tel:${profile.phone}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
+                        <PhoneIcon className="h-4 w-4" />
+                        <span className="text-sm">{profile.phone}</span>
+                      </a>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
-          <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
-            <PencilIcon className="h-5 w-5" />
-          </button>
+          {!isEditing && (
+            <button 
+              onClick={handleEditClick}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+              title="Edit Profile"
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Bio */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h3 className="font-semibold text-gray-900 mb-2">About</h3>
+      {/* Bio */}
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <h3 className="font-semibold text-gray-900 mb-2">About</h3>
+        {isEditing ? (
+          <textarea
+            value={editForm.bio}
+            onChange={(e) => handleInputChange('bio', e.target.value)}
+            rows={4}
+            placeholder="Tell us about yourself..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          />
+        ) : (
           <p className="text-gray-700">{profile.bio || 'No bio provided yet.'}</p>
-        </div>
+        )}
+      </div>
 
-        {/* Links */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h3 className="font-semibold text-gray-900 mb-3">Links</h3>
-          <div className="flex flex-wrap gap-3">
-            {profile.linkedin_url && (
-              <a href={profile.linkedin_url.startsWith('http') ? profile.linkedin_url : `https://${profile.linkedin_url}`} 
-                 className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
-                <LinkIcon className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-700">LinkedIn</span>
-              </a>
-            )}
-            {profile.portfolio_url && (
-              <a href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`} 
-                 className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
-                <LinkIcon className="h-4 w-4 text-gray-600" />
-                <span className="text-sm text-gray-700">Portfolio</span>
-              </a>
-            )}
-          </div>
+      {/* Links */}
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <h3 className="font-semibold text-gray-900 mb-3">Links</h3>
+        <div className="flex flex-wrap gap-3">
+          {isEditing ? (
+            <>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="url"
+                  value={editForm.linkedin_url}
+                  onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                  placeholder="LinkedIn URL"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="url"
+                  value={editForm.portfolio_url}
+                  onChange={(e) => handleInputChange('portfolio_url', e.target.value)}
+                  placeholder="Portfolio URL"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {profile.linkedin_url && (
+                <a href={profile.linkedin_url.startsWith('http') ? profile.linkedin_url : `https://${profile.linkedin_url}`} 
+                   className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
+                  <LinkIcon className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">LinkedIn</span>
+                </a>
+              )}
+              {profile.portfolio_url && (
+                <a href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`} 
+                   className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
+                  <LinkIcon className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">Portfolio</span>
+                </a>
+              )}
+            </>
+          )}
         </div>
       </div>
 
