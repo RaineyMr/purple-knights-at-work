@@ -9,10 +9,18 @@ export default function JobBoard() {
     job_type: '',
     location: ''
   });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalJobs: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchJobs();
-  }, [filters]);
+  }, [filters, currentPage]);
 
   const fetchJobs = async () => {
     try {
@@ -21,8 +29,9 @@ export default function JobBoard() {
       if (filters.job_type) activeFilters.job_type = filters.job_type;
       if (filters.location) activeFilters.location = filters.location;
 
-      const jobData = await db.getJobs(activeFilters);
-      setJobs(jobData);
+      const response = await db.getJobs(activeFilters, currentPage, 10);
+      setJobs(response.jobs);
+      setPagination(response.pagination);
     } catch (error) {
       console.error('Error fetching jobs:', error);
     } finally {
@@ -35,6 +44,103 @@ export default function JobBoard() {
       ...prev,
       [field]: value
     }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const renderPaginationControls = () => {
+    if (pagination.totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(pagination.totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return (
+      <div className="flex items-center justify-center space-x-2 mt-8">
+        <button
+          onClick={() => handlePageChange(1)}
+          disabled={!pagination.hasPreviousPage}
+          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          First
+        </button>
+        
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={!pagination.hasPreviousPage}
+          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+
+        {startPage > 1 && (
+          <>
+            <button
+              onClick={() => handlePageChange(1)}
+              className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              1
+            </button>
+            {startPage > 2 && <span className="px-2 text-gray-500">...</span>}
+          </>
+        )}
+
+        {pages.map(page => (
+          <button
+            key={page}
+            onClick={() => handlePageChange(page)}
+            className={`px-3 py-2 text-sm font-medium rounded-md ${
+              page === currentPage
+                ? 'bg-blue-600 text-white border border-blue-600'
+                : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        {endPage < pagination.totalPages && (
+          <>
+            {endPage < pagination.totalPages - 1 && <span className="px-2 text-gray-500">...</span>}
+            <button
+              onClick={() => handlePageChange(pagination.totalPages)}
+              className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              {pagination.totalPages}
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={!pagination.hasNextPage}
+          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+
+        <button
+          onClick={() => handlePageChange(pagination.totalPages)}
+          disabled={!pagination.hasNextPage}
+          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Last
+        </button>
+      </div>
+    );
   };
 
   if (loading) {
@@ -107,7 +213,11 @@ export default function JobBoard() {
             <p className="text-gray-600">No jobs found matching your criteria.</p>
           </div>
         ) : (
-          jobs.map((job) => (
+          <>
+            <div className="text-sm text-gray-600 mb-4">
+              Showing {jobs.length} of {pagination.totalJobs} jobs (Page {pagination.currentPage} of {pagination.totalPages})
+            </div>
+            {jobs.map((job) => (
             <div key={job.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -204,9 +314,13 @@ export default function JobBoard() {
                 </div>
               )}
             </div>
-          ))
+            ))}
+          </>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {renderPaginationControls()}
     </div>
   );
 }

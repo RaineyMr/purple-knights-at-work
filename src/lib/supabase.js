@@ -40,13 +40,13 @@ export const db = {
   },
 
   // Job functions
-  async getJobs(filters = {}) {
+  async getJobs(filters = {}, page = 1, limit = 10) {
     // Use secure API instead of direct Supabase access
     const { jobsAPI } = await import('../api/jobs');
-    const jobs = await jobsAPI.getJobs();
+    const response = await jobsAPI.getJobs(page, limit);
     
     // Apply filters if provided
-    let filteredJobs = jobs;
+    let filteredJobs = response.jobs;
     
     if (filters.location) {
       filteredJobs = filteredJobs.filter(job => 
@@ -60,7 +60,17 @@ export const db = {
       );
     }
     
-    return filteredJobs;
+    if (filters.company_id) {
+      filteredJobs = filteredJobs.filter(job => 
+        job.company && job.company.name.toLowerCase().includes(filters.company_id.toLowerCase())
+      );
+    }
+    
+    // Return in the same format as the API
+    return {
+      jobs: filteredJobs,
+      pagination: response.pagination
+    };
   },
 
   async getJob(jobId) {
