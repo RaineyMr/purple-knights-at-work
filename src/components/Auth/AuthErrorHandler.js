@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { clearAllAuthData, isAuthError } from '../../utils/authCleanup';
 
 export const AuthErrorHandler = ({ children }) => {
   const { clearCorruptedSession } = useAuth();
@@ -9,8 +10,7 @@ export const AuthErrorHandler = ({ children }) => {
   useEffect(() => {
     // Listen for Supabase auth errors
     const handleAuthError = (event) => {
-      if (event.detail?.message?.includes('Invalid Refresh Token') || 
-          event.detail?.message?.includes('Refresh Token Not Found')) {
+      if (isAuthError(event.detail)) {
         setErrorMessage('Your session has expired. Please sign in again.');
         setShowError(true);
       }
@@ -18,12 +18,22 @@ export const AuthErrorHandler = ({ children }) => {
 
     // Listen for unhandled promise rejections
     const handleUnhandledRejection = (event) => {
-      if (event.reason?.message?.includes('Invalid Refresh Token') || 
-          event.reason?.message?.includes('Refresh Token Not Found')) {
+      if (isAuthError(event.reason)) {
         setErrorMessage('Your session has expired. Please sign in again.');
         setShowError(true);
         event.preventDefault();
       }
+    };
+
+    // Listen for console errors (catch any missed auth errors)
+    const originalError = console.error;
+    console.error = (...args) => {
+      const errorString = args.join(' ');
+      if (isAuthError({ message: errorString })) {
+        setErrorMessage('Your session has expired. Please sign in again.');
+        setShowError(true);
+      }
+      originalError.apply(console, args);
     };
 
     window.addEventListener('supabase.auth.error', handleAuthError);
@@ -32,10 +42,12 @@ export const AuthErrorHandler = ({ children }) => {
     return () => {
       window.removeEventListener('supabase.auth.error', handleAuthError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      console.error = originalError;
     };
   }, []);
 
   const handleClearSession = async () => {
+    clearAllAuthData();
     await clearCorruptedSession();
     setShowError(false);
     setErrorMessage('');

@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 
 // Auth Error Handler
 import { AuthErrorHandler } from './components/Auth/AuthErrorHandler';
+import AuthErrorBoundary from './components/Auth/AuthErrorBoundary';
 
 // Layout Components
 import Layout from './components/Layout/Layout';
@@ -33,48 +34,50 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 
 function App() {
   return (
-    <AuthProvider>
-      <AuthErrorHandler>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
-          <Route path="/signup" element={<AuthLayout><Signup /></AuthLayout>} />
-          <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
-          
-          {/* Protected Routes */}
-          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/login" replace />} />
+    <AuthErrorBoundary>
+      <AuthProvider>
+        <AuthErrorHandler>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+            <Route path="/signup" element={<AuthLayout><Signup /></AuthLayout>} />
+            <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
             
-            {/* Main Routes */}
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="feed" element={<Feed />} />
+            {/* Protected Routes */}
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="/login" replace />} />
+              
+              {/* Main Routes */}
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="feed" element={<Feed />} />
+              
+              {/* Job Routes */}
+              <Route path="jobs" element={<JobBoard />} />
+              <Route path="jobs/:id" element={<JobDetail />} />
+              <Route path="post-job" element={<PostJob />} />
+              <Route path="applications" element={<Applications />} />
+              
+              {/* User & Company Routes */}
+              <Route path="profile" element={<UserProfile />} />
+              <Route path="user/:id" element={<UserProfile />} />
+              <Route path="company/:id" element={<CompanyProfile />} />
+              
+              {/* Groups/Networks Routes */}
+              <Route path="groups" element={<Groups />} />
+              <Route path="groups/:id" element={<GroupDetail />} />
+              
+              {/* Messaging & Settings */}
+              <Route path="messages" element={<Messages />} />
+              <Route path="messages/:userId" element={<Messages />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
             
-            {/* Job Routes */}
-            <Route path="jobs" element={<JobBoard />} />
-            <Route path="jobs/:id" element={<JobDetail />} />
-            <Route path="post-job" element={<PostJob />} />
-            <Route path="applications" element={<Applications />} />
-            
-            {/* User & Company Routes */}
-            <Route path="profile" element={<UserProfile />} />
-            <Route path="user/:id" element={<UserProfile />} />
-            <Route path="company/:id" element={<CompanyProfile />} />
-            
-            {/* Groups/Networks Routes */}
-            <Route path="groups" element={<Groups />} />
-            <Route path="groups/:id" element={<GroupDetail />} />
-            
-            {/* Messaging & Settings */}
-            <Route path="messages" element={<Messages />} />
-            <Route path="messages/:userId" element={<Messages />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-          
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </AuthErrorHandler>
-    </AuthProvider>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </AuthErrorHandler>
+      </AuthProvider>
+    </AuthErrorBoundary>
   );
 }
 
