@@ -2,17 +2,16 @@
   "name": "purple-knights-at-work",
   "version": "1.0.0",
   "description": "St. Augustine High School Alumni Career Network Platform",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
     "@supabase/supabase-js": "^2.38.4",
     "react-router-dom": "^6.8.1",
     "react-hook-form": "^7.43.9",
@@ -26,6 +25,8 @@
     "clsx": "^1.2.1"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
     "@types/react": "^18.0.28",
