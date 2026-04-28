@@ -40,7 +40,6 @@ const Layout = () => {
   const getNavigationItems = () => {
     const baseItems = [
       { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, current: location.pathname === '/dashboard' },
-      { name: 'Feed', href: '/feed', icon: NewspaperIcon, current: location.pathname === '/feed' },
       { name: 'Job Board', href: '/jobs', icon: BriefcaseIcon, current: location.pathname.startsWith('/jobs') },
       { name: 'Post Job', href: '/post-job', icon: BriefcaseIcon, current: location.pathname === '/post-job' },
       { name: 'Applications', href: '/applications', icon: DocumentTextIcon, current: location.pathname === '/applications' },

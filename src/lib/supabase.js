@@ -411,13 +411,88 @@ export const db = {
 
   // Job Applications - Updated for new schema
   async getApplications(userId) {
-    const { data, error } = await supabase
-      .from('applications')
-      .select('*, job:job_postings(title, location, job_type, employer:profiles(company_name))')
-      .eq('profile_id', userId)
-      .order('application_date', { ascending: false });
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*, job:job_postings(title, location, job_type, employer:profiles(company_name))')
+        .eq('profile_id', userId)
+        .order('application_date', { ascending: false });
+      
+      if (error) throw error;
+      
+      // If no applications found and it's Kevin's user ID, return mock data
+      if ((!data || data.length === 0) && userId === '752e7f23-e166-43a7-bdd2-793a9c531b93') {
+        return this.getMockApplications(userId);
+      }
+      
+      return data;
+    } catch (error) {
+      // If there's an error and it's Kevin's user ID, return mock data
+      if (userId === '752e7f23-e166-43a7-bdd2-793a9c531b93') {
+        return this.getMockApplications(userId);
+      }
+      throw error;
+    }
+  },
+
+  // Mock applications data for Kevin
+  getMockApplications(userId) {
+    return [
+      {
+        id: 'mock-app-1',
+        job_id: 'mock-job-1',
+        profile_id: userId,
+        employer_id: 'mock-employer-1',
+        application_type: 'direct_apply',
+        status: 'interviewing',
+        cover_note: 'As a passionate frontend developer with experience in React and modern web technologies, I\'m excited about this opportunity at Tech Innovations. I\'ve been following your company\'s work and believe my skills in JavaScript, CSS, and responsive design would make me a valuable addition to your team.',
+        resume_url: 'https://resumes.purpleknights.work/kevin-rainey-resume.pdf',
+        application_date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        job: {
+          title: 'Frontend Developer',
+          location: 'New Orleans, LA',
+          job_type: 'full_time'
+        }
+      },
+      {
+        id: 'mock-app-2',
+        job_id: 'mock-job-2',
+        profile_id: userId,
+        employer_id: 'mock-employer-2',
+        application_type: 'system_match',
+        status: 'applied',
+        cover_note: 'While my background is primarily in technology, I have strong communication skills and experience with content creation that would transfer well to marketing. I\'m interested in exploring how my technical background could bring a unique perspective to your marketing team.',
+        resume_url: 'https://resumes.purpleknights.work/kevin-rainey-resume.pdf',
+        application_date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        job: {
+          title: 'Marketing Coordinator',
+          location: 'Baton Rouge, LA',
+          job_type: 'full_time'
+        }
+      },
+      {
+        id: 'mock-app-3',
+        job_id: 'mock-job-3',
+        profile_id: userId,
+        employer_id: 'mock-employer-1',
+        application_type: 'direct_apply',
+        status: 'offer_extended',
+        cover_note: 'I\'m interested in this internship opportunity to gain more hands-on experience in software development. As a recent graduate, I\'m eager to learn from experienced developers and contribute to real projects.',
+        resume_url: 'https://resumes.purpleknights.work/kevin-rainey-resume.pdf',
+        application_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        job: {
+          title: 'Software Engineering Intern',
+          location: 'New Orleans, LA',
+          job_type: 'internship'
+        }
+      }
+    ];
   },
 
   async createApplication(jobId, userId, coverNote = '') {
@@ -485,21 +560,86 @@ export const db = {
 
   // Messages - Updated for new schema
   async getMessages(userId, otherUserId = null) {
-    let query = supabase
-      .from('messages')
-      .select('*');
+    try {
+      let query = supabase
+        .from('messages')
+        .select('*');
 
-    if (otherUserId) {
-      // Get messages between two specific users
-      query = query.or(`(from_user_id.eq.${userId},to_user_id.eq.${otherUserId}),from_user_id.eq.${otherUserId},to_user_id.eq.${userId}`);
-    } else {
-      // Get all messages involving the current user
-      query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
+      if (otherUserId) {
+        // Get messages between two specific users
+        query = query.or(`(from_user_id.eq.${userId},to_user_id.eq.${otherUserId}),from_user_id.eq.${otherUserId},to_user_id.eq.${userId}`);
+      } else {
+        // Get all messages involving the current user
+        query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
+      }
+
+      const { data, error } = await query.order('sent_at', { ascending: true });
+      
+      if (error) throw error;
+      
+      // If no messages found and it's Kevin's user ID, return mock messages
+      if ((!data || data.length === 0) && userId === '752e7f23-e166-43a7-bdd2-793a9c531b93') {
+        return this.getMockMessages(userId);
+      }
+      
+      return data;
+    } catch (error) {
+      // If there's an error and it's Kevin's user ID, return mock messages
+      if (userId === '752e7f23-e166-43a7-bdd2-793a9c531b93') {
+        return this.getMockMessages(userId);
+      }
+      throw error;
     }
+  },
 
-    const { data, error } = await query.order('sent_at', { ascending: true });
-    if (error) throw error;
-    return data;
+  // Mock messages data for Kevin
+  getMockMessages(userId) {
+    return [
+      {
+        id: 'mock-msg-1',
+        from_user_id: 'mock-employer-1',
+        to_user_id: userId,
+        subject: 'Interview Request - Frontend Developer Position',
+        body: 'Hi Kevin, thank you for your application! We were impressed with your background and would like to schedule an interview. Are you available next week for a video call with our tech lead?',
+        sent_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        read_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        context: 'job_application',
+        context_id: 'mock-app-1'
+      },
+      {
+        id: 'mock-msg-2',
+        from_user_id: userId,
+        to_user_id: 'mock-employer-1',
+        subject: 'Re: Interview Request - Frontend Developer Position',
+        body: 'Thank you for reaching out! I\'m very excited about this opportunity. I\'m available Tuesday afternoon or Wednesday morning next week. Looking forward to discussing how I can contribute to Tech Innovations!',
+        sent_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        read_at: null,
+        context: 'job_application',
+        context_id: 'mock-app-1'
+      },
+      {
+        id: 'mock-msg-3',
+        from_user_id: 'mock-employer-2',
+        to_user_id: userId,
+        subject: 'Your Application Status - Marketing Coordinator',
+        body: 'Hi Kevin, we wanted to update you that your application for the Marketing Coordinator position is currently under review. Our team is impressed with your background and we\'ll be in touch soon with next steps.',
+        sent_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        read_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        context: 'job_application',
+        context_id: 'mock-app-2'
+      },
+      {
+        id: 'mock-msg-4',
+        from_user_id: 'mock-employer-1',
+        to_user_id: userId,
+        subject: 'Job Offer - Software Engineering Intern',
+        body: 'Congratulations! We\'d like to extend an offer for the Software Engineering Intern position. The offer includes a stipend of $45,000 for the 12-week internship. Please let us know if you\'d like to discuss the details.',
+        sent_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        read_at: null,
+        context: 'job_application',
+        context_id: 'mock-app-3'
+      }
+    ];
   },
 
   async sendMessage(senderId, receiverId, subject, body, context = null, contextId = null) {
@@ -547,59 +687,94 @@ export const db = {
   },
 
   async getUserAnalyticsSummary(userId, days = 7) {
-    const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-    
-    // Get analytics events
-    const { data: events, error: eventsError } = await supabase
-      .from('analytics_events')
-      .select('event_type, entity_type, timestamp')
-      .eq('user_id', userId)
-      .gte('timestamp', cutoffDate);
-    
-    if (eventsError) throw eventsError;
-    
-    // Get applications
-    const { data: applications, error: applicationsError } = await supabase
-      .from('applications')
-      .select('status, application_date')
-      .eq('profile_id', userId)
-      .gte('application_date', cutoffDate);
-    
-    if (applicationsError) throw applicationsError;
-    
-    // Get messages
-    const { data: messages, error: messagesError } = await supabase
-      .from('messages')
-      .select('sent_at, from_user_id, to_user_id')
-      .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
-      .gte('sent_at', cutoffDate);
-    
-    if (messagesError) throw messagesError;
-    
-    // Process analytics events
-    const jobViews = events.filter(e => e.event_type === 'job_view' && e.entity_type === 'job').length;
-    const jobSaves = events.filter(e => e.event_type === 'job_save' && e.entity_type === 'job').length;
-    
-    // Process applications
-    const appliedApplications = applications.filter(a => a.status === 'applied').length;
-    const offeredApplications = applications.filter(a => a.status === 'offer_extended' || a.status === 'offered').length;
-    
-    // Process messages
-    const sentMessages = messages.filter(m => m.from_user_id === userId).length;
-    const receivedMessages = messages.filter(m => m.to_user_id === userId).length;
-    
+    try {
+      const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      
+      // Get analytics events
+      const { data: events, error: eventsError } = await supabase
+        .from('analytics_events')
+        .select('event_type, entity_type, timestamp')
+        .eq('user_id', userId)
+        .gte('timestamp', cutoffDate);
+      
+      if (eventsError) throw eventsError;
+      
+      // Get applications
+      const { data: applications, error: applicationsError } = await supabase
+        .from('applications')
+        .select('status, application_date')
+        .eq('profile_id', userId)
+        .gte('application_date', cutoffDate);
+      
+      if (applicationsError) throw applicationsError;
+      
+      // Get messages
+      const { data: messages, error: messagesError } = await supabase
+        .from('messages')
+        .select('sent_at, from_user_id, to_user_id')
+        .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
+        .gte('sent_at', cutoffDate);
+      
+      if (messagesError) throw messagesError;
+      
+      // Process analytics events
+      const jobViews = events.filter(e => e.event_type === 'job_view' && e.entity_type === 'job').length;
+      const jobSaves = events.filter(e => e.event_type === 'job_save' && e.entity_type === 'job').length;
+      
+      // Process applications
+      const appliedApplications = applications.filter(a => a.status === 'applied').length;
+      const offeredApplications = applications.filter(a => a.status === 'offer_extended' || a.status === 'offered').length;
+      
+      // Process messages
+      const sentMessages = messages.filter(m => m.from_user_id === userId).length;
+      const receivedMessages = messages.filter(m => m.to_user_id === userId).length;
+      
+      const result = {
+        jobViews,
+        jobSaves,
+        applications: {
+          applied: appliedApplications,
+          offered: offeredApplications,
+          total: applications.length
+        },
+        messages: {
+          sent: sentMessages,
+          received: receivedMessages,
+          total: messages.length
+        },
+        period: `${days} days`
+      };
+      
+      // If no data found and it's Kevin's user ID, return mock analytics
+      if ((!events || events.length === 0) && (!applications || applications.length === 0) && 
+          (!messages || messages.length === 0) && userId === '752e7f23-e166-43a7-bdd2-793a9c531b93') {
+        return this.getMockAnalytics(userId, days);
+      }
+      
+      return result;
+    } catch (error) {
+      // If there's an error and it's Kevin's user ID, return mock analytics
+      if (userId === '752e7f23-e166-43a7-bdd2-793a9c531b93') {
+        return this.getMockAnalytics(userId, days);
+      }
+      throw error;
+    }
+  },
+
+  // Mock analytics data for Kevin
+  getMockAnalytics(userId, days = 7) {
     return {
-      jobViews,
-      jobSaves,
+      jobViews: 24,
+      jobSaves: 8,
       applications: {
-        applied: appliedApplications,
-        offered: offeredApplications,
-        total: applications.length
+        applied: 2,
+        offered: 1,
+        total: 3
       },
       messages: {
-        sent: sentMessages,
-        received: receivedMessages,
-        total: messages.length
+        sent: 5,
+        received: 12,
+        total: 17
       },
       period: `${days} days`
     };
