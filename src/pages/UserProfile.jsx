@@ -118,20 +118,46 @@ export default function UserProfile() {
     try {
       setIsSaving(true);
       
+      console.log('Saving profile with data:', editForm);
+      console.log('User ID:', user.id);
+      
       // Convert graduation_year to number if provided
       const updateData = { ...editForm };
       if (editForm.graduation_year && editForm.graduation_year !== '') {
         updateData.graduation_year = parseInt(editForm.graduation_year);
       }
       
-      const { error } = await supabase
+      // Remove empty values and undefined/null fields
+      const cleanedData = {};
+      Object.keys(updateData).forEach(key => {
+        const value = updateData[key];
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanedData[key] = value;
+        }
+      });
+      
+      console.log('Final update data:', updateData);
+      console.log('Cleaned data for Supabase:', cleanedData);
+      
+      const { data, error } = await supabase
         .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
+        .update(cleanedData)
+        .eq('id', user.id)
+        .select();
       
-      if (error) throw error;
+      console.log('Supabase response:', { data, error });
       
-      setProfile(prev => ({ ...prev, ...updateData }));
+      if (error) {
+        console.error('Supabase error details:', error);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.details);
+        console.error('Error hint:', error.hint);
+        console.error('Error code:', error.code);
+        throw error;
+      }
+      
+      console.log('Profile updated successfully');
+      setProfile(prev => ({ ...prev, ...cleanedData }));
       setIsEditing(false);
       
     } catch (error) {
@@ -148,7 +174,12 @@ export default function UserProfile() {
   };
 
   const handleInputChange = (field, value) => {
-    setEditForm(prev => ({ ...prev, [field]: value }));
+    console.log(`Updating ${field} to:`, value);
+    setEditForm(prev => {
+      const newForm = { ...prev, [field]: value };
+      console.log('New editForm:', newForm);
+      return newForm;
+    });
   };
 
   if (loading) {
