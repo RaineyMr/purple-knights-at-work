@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BriefcaseIcon, 
   AcademicCapIcon, 
@@ -12,83 +12,120 @@ import {
   HeartIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export default function UserProfile() {
   const [activeTab, setActiveTab] = useState('about');
+  const [profile, setProfile] = useState(null);
+  const [skills, setSkills] = useState([]);
+  const [experience, setExperience] = useState([]);
+  const [education, setEducation] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
 
-  const userProfile = {
-    name: 'Alex Thompson',
-    title: 'Computer Science Student',
-    email: 'alex.thompson@purpleknights.edu',
-    phone: '(555) 123-4567',
-    location: 'Boston, MA',
-    graduationYear: '2025',
-    major: 'Computer Science',
-    minor: 'Mathematics',
-    gpa: '3.8',
-    bio: 'Passionate computer science student with a focus on machine learning and web development. Looking for internship opportunities in software engineering. Active in the Purple Knights community and always eager to learn and collaborate.',
-    avatar: 'AT',
-    linkedin: 'linkedin.com/in/alexthompson',
-    github: 'github.com/alexthompson',
-    portfolio: 'alexthompson.dev'
+  useEffect(() => {
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user]);
+
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Fetching profile for user ID:', user.id);
+      
+      // Fetch profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      console.log('Profile data:', profileData);
+      console.log('Profile error:', profileError);
+      
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        throw profileError;
+      }
+      
+      setProfile(profileData);
+      
+      // Fetch skills
+      const { data: skillsData, error: skillsError } = await supabase
+        .from('alumni_skills')
+        .select('*')
+        .eq('profile_id', user.id);
+      
+      if (!skillsError && skillsData) {
+        setSkills(skillsData);
+      }
+      
+      // Fetch experience
+      const { data: experienceData, error: expError } = await supabase
+        .from('alumni_experience')
+        .select('*')
+        .eq('profile_id', user.id)
+        .order('start_date', { ascending: false });
+      
+      if (!expError && experienceData) {
+        setExperience(experienceData);
+      }
+      
+      // Fetch education
+      const { data: educationData, error: eduError } = await supabase
+        .from('alumni_education')
+        .select('*')
+        .eq('profile_id', user.id)
+        .order('start_date', { ascending: false });
+      
+      if (!eduError && educationData) {
+        setEducation(educationData);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const experiences = [
-    {
-      id: 1,
-      title: 'Software Engineering Intern',
-      company: 'Tech Innovations Inc.',
-      location: 'Boston, MA',
-      startDate: 'June 2024',
-      endDate: 'August 2024',
-      current: false,
-      description: 'Developed web applications using React and Node.js. Contributed to the development of a customer management system that improved efficiency by 25%.'
-    },
-    {
-      id: 2,
-      title: 'Teaching Assistant',
-      company: 'Purple Knights University',
-      location: 'Campus',
-      startDate: 'September 2023',
-      endDate: 'Present',
-      current: true,
-      description: 'Assist in teaching CS101: Introduction to Programming. Grade assignments, hold office hours, and help students with coding concepts.'
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      </div>
+    );
+  }
 
-  const education = [
-    {
-      id: 1,
-      degree: 'Bachelor of Science in Computer Science',
-      school: 'Purple Knights University',
-      location: 'Boston, MA',
-      startDate: '2021',
-      endDate: '2025',
-      current: true,
-      gpa: '3.8'
-    }
-  ];
-
-  const skills = [
-    'JavaScript', 'React', 'Node.js', 'Python', 'Java', 'SQL', 'Git', 'Machine Learning', 'Data Structures', 'Algorithms'
-  ];
-
-  const activities = [
-    {
-      id: 1,
-      name: 'Computer Science Club',
-      role: 'Vice President',
-      startDate: '2022',
-      description: 'Organize tech talks, hackathons, and networking events for CS students.'
-    },
-    {
-      id: 2,
-      name: 'Purple Knights Mentorship Program',
-      role: 'Mentee',
-      startDate: '2023',
-      description: 'Paired with industry mentor for career guidance and professional development.'
-    }
-  ];
+  if (!profile) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile Not Found</h2>
+          <p className="text-gray-600 mb-4">Your profile could not be found. Please complete your profile setup.</p>
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-700">Error: {error}</p>
+            </div>
+          )}
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">User ID: {user?.id}</p>
+            <p className="text-sm text-gray-500">Email: {user?.email}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const TabButton = ({ id, label, icon: Icon }) => (
     <button
@@ -111,34 +148,42 @@ export default function UserProfile() {
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-6">
             <div className="h-24 w-24 rounded-full bg-purple-600 flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">{userProfile.avatar}</span>
+              <span className="text-white text-2xl font-bold">
+                {profile.first_name ? profile.first_name[0] + profile.last_name[0] : 'U'}
+              </span>
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">{userProfile.name}</h1>
-              <p className="text-lg text-gray-600 mt-1">{userProfile.title}</p>
+              <h1 className="text-2xl font-bold text-gray-900">{profile.first_name} {profile.last_name}</h1>
+              <p className="text-lg text-gray-600 mt-1">{profile.headline || 'Purple Knight Alumnus'}</p>
               <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                <div className="flex items-center space-x-1">
-                  <MapPinIcon className="h-4 w-4" />
-                  <span>{userProfile.location}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>Class of {userProfile.graduationYear}</span>
-                </div>
+                {profile.location && (
+                  <div className="flex items-center space-x-1">
+                    <MapPinIcon className="h-4 w-4" />
+                    <span>{profile.location}</span>
+                  </div>
+                )}
+                {profile.graduation_year && (
+                  <div className="flex items-center space-x-1">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>Class of {profile.graduation_year}</span>
+                  </div>
+                )}
                 <div className="flex items-center space-x-1">
                   <AcademicCapIcon className="h-4 w-4" />
-                  <span>GPA: {userProfile.gpa}</span>
+                  <span>Verified Alumni: {profile.verified_alumni ? 'Yes' : 'No'}</span>
                 </div>
               </div>
               <div className="flex items-center space-x-4 mt-4">
-                <a href={`mailto:${userProfile.email}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
+                <a href={`mailto:${user.email}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
                   <EnvelopeIcon className="h-4 w-4" />
-                  <span className="text-sm">{userProfile.email}</span>
+                  <span className="text-sm">{user.email}</span>
                 </a>
-                <a href={`tel:${userProfile.phone}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
-                  <PhoneIcon className="h-4 w-4" />
-                  <span className="text-sm">{userProfile.phone}</span>
-                </a>
+                {profile.phone && (
+                  <a href={`tel:${profile.phone}`} className="flex items-center space-x-1 text-purple-600 hover:text-purple-700">
+                    <PhoneIcon className="h-4 w-4" />
+                    <span className="text-sm">{profile.phone}</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -150,25 +195,27 @@ export default function UserProfile() {
         {/* Bio */}
         <div className="mt-6 pt-6 border-t border-gray-200">
           <h3 className="font-semibold text-gray-900 mb-2">About</h3>
-          <p className="text-gray-700">{userProfile.bio}</p>
+          <p className="text-gray-700">{profile.bio || 'No bio provided yet.'}</p>
         </div>
 
         {/* Links */}
         <div className="mt-6 pt-6 border-t border-gray-200">
           <h3 className="font-semibold text-gray-900 mb-3">Links</h3>
           <div className="flex flex-wrap gap-3">
-            <a href={`https://${userProfile.linkedin}`} className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
-              <LinkIcon className="h-4 w-4 text-gray-600" />
-              <span className="text-sm text-gray-700">LinkedIn</span>
-            </a>
-            <a href={`https://${userProfile.github}`} className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
-              <LinkIcon className="h-4 w-4 text-gray-600" />
-              <span className="text-sm text-gray-700">GitHub</span>
-            </a>
-            <a href={`https://${userProfile.portfolio}`} className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
-              <LinkIcon className="h-4 w-4 text-gray-600" />
-              <span className="text-sm text-gray-700">Portfolio</span>
-            </a>
+            {profile.linkedin_url && (
+              <a href={profile.linkedin_url.startsWith('http') ? profile.linkedin_url : `https://${profile.linkedin_url}`} 
+                 className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <LinkIcon className="h-4 w-4 text-gray-600" />
+                <span className="text-sm text-gray-700">LinkedIn</span>
+              </a>
+            )}
+            {profile.portfolio_url && (
+              <a href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`} 
+                 className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100">
+                <LinkIcon className="h-4 w-4 text-gray-600" />
+                <span className="text-sm text-gray-700">Portfolio</span>
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -190,32 +237,36 @@ export default function UserProfile() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Skills</h3>
               <div className="flex flex-wrap gap-2">
-                {skills.map(skill => (
-                  <span key={skill} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm">
-                    {skill}
-                  </span>
-                ))}
+                {skills.length > 0 ? (
+                  skills.map(skill => (
+                    <span key={skill.id} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm">
+                      {skill.skill_name} ({skill.proficiency_level})
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No skills added yet.</p>
+                )}
               </div>
             </div>
             
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Academic Information</h3>
+              <h3 className="font-semibold text-gray-900 mb-3">Profile Information</h3>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Major:</span>
-                  <span className="font-medium">{userProfile.major}</span>
+                  <span className="text-gray-600">Role:</span>
+                  <span className="font-medium capitalize">{profile.role}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Minor:</span>
-                  <span className="font-medium">{userProfile.minor}</span>
+                  <span className="text-gray-600">Graduation Year:</span>
+                  <span className="font-medium">{profile.graduation_year || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">GPA:</span>
-                  <span className="font-medium">{userProfile.gpa}</span>
+                  <span className="text-gray-600">Verified Alumni:</span>
+                  <span className="font-medium">{profile.verified_alumni ? 'Yes' : 'No'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Expected Graduation:</span>
-                  <span className="font-medium">{userProfile.graduationYear}</span>
+                  <span className="text-gray-600">Allow Employer Contact:</span>
+                  <span className="font-medium">{profile.allow_employer_contact ? 'Yes' : 'No'}</span>
                 </div>
               </div>
             </div>
@@ -224,58 +275,71 @@ export default function UserProfile() {
 
         {activeTab === 'experience' && (
           <div className="space-y-6">
-            {experiences.map(exp => (
-              <div key={exp.id} className="border-l-4 border-purple-600 pl-4">
-                <h3 className="font-semibold text-gray-900">{exp.title}</h3>
-                <p className="text-purple-600 font-medium">{exp.company}</p>
-                <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
-                  <MapPinIcon className="h-4 w-4" />
-                  <span>{exp.location}</span>
-                  <span>•</span>
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>{exp.startDate} - {exp.current ? 'Present' : exp.endDate}</span>
+            {experience.length > 0 ? (
+              experience.map(exp => (
+                <div key={exp.id} className="border-l-4 border-purple-600 pl-4">
+                  <h3 className="font-semibold text-gray-900">{exp.position}</h3>
+                  <p className="text-purple-600 font-medium">{exp.company_name}</p>
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+                    {exp.location && (
+                      <>
+                        <MapPinIcon className="h-4 w-4" />
+                        <span>{exp.location}</span>
+                        <span>•</span>
+                      </>
+                    )}
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{new Date(exp.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} - {exp.current_position ? 'Present' : new Date(exp.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}</span>
+                  </div>
+                  {exp.description && (
+                    <p className="text-gray-700 mt-2">{exp.description}</p>
+                  )}
                 </div>
-                <p className="text-gray-700 mt-2">{exp.description}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500">No experience added yet.</p>
+            )}
           </div>
         )}
 
         {activeTab === 'education' && (
           <div className="space-y-6">
-            {education.map(edu => (
-              <div key={edu.id} className="border-l-4 border-purple-600 pl-4">
-                <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
-                <p className="text-purple-600 font-medium">{edu.school}</p>
-                <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
-                  <MapPinIcon className="h-4 w-4" />
-                  <span>{edu.location}</span>
-                  <span>•</span>
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>{edu.startDate} - {edu.current ? 'Present' : edu.endDate}</span>
+            {education.length > 0 ? (
+              education.map(edu => (
+                <div key={edu.id} className="border-l-4 border-purple-600 pl-4">
+                  <h3 className="font-semibold text-gray-900">{edu.degree} in {edu.field_of_study}</h3>
+                  <p className="text-purple-600 font-medium">{edu.institution_name}</p>
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{new Date(edu.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} - {edu.current_student ? 'Present' : new Date(edu.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}</span>
+                  </div>
+                  {edu.gpa && (
+                    <div className="mt-2">
+                      <span className="text-sm text-gray-600">GPA: </span>
+                      <span className="text-sm font-medium">{edu.gpa}</span>
+                    </div>
+                  )}
+                  {edu.activities && edu.activities.length > 0 && (
+                    <div className="mt-2">
+                      <span className="text-sm text-gray-600">Activities: </span>
+                      <span className="text-sm font-medium">{edu.activities.join(', ')}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-2">
-                  <span className="text-sm text-gray-600">GPA: </span>
-                  <span className="text-sm font-medium">{edu.gpa}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500">No education records added yet.</p>
+            )}
           </div>
         )}
 
         {activeTab === 'activities' && (
           <div className="space-y-6">
-            {activities.map(activity => (
-              <div key={activity.id} className="border-l-4 border-purple-600 pl-4">
-                <h3 className="font-semibold text-gray-900">{activity.name}</h3>
-                <p className="text-purple-600 font-medium">{activity.role}</p>
-                <div className="flex items-center space-x-2 text-sm text-gray-500 mt-1">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>Since {activity.startDate}</span>
-                </div>
-                <p className="text-gray-700 mt-2">{activity.description}</p>
-              </div>
-            ))}
+            <div className="text-center py-8">
+              <HeartIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Activities Coming Soon</h3>
+              <p className="text-gray-500">This section will display your extracurricular activities, mentorship relationships, and community involvement.</p>
+            </div>
           </div>
         )}
       </div>
