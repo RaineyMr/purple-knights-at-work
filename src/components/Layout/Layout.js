@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Layout = () => {
-  const { user, profile, signOut, isAlumni, isEmployer, isMentor, isAdmin } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,12 +50,12 @@ const Layout = () => {
       { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, current: location.pathname === '/settings' },
     ];
 
-    // Add admin section for admin users
-    if (isAdmin) {
-      baseItems.push(
-        { name: 'User Management', href: '/admin/users', icon: ShieldCheckIcon, current: location.pathname.startsWith('/admin') }
-      );
-    }
+    // Admin section can be added later when role-based access is implemented
+    // if (isAdmin) {
+    //   baseItems.push(
+    //     { name: 'User Management', href: '/admin/users', icon: ShieldCheckIcon, current: location.pathname.startsWith('/admin') }
+    //   );
+    // }
 
     return baseItems;
   };
