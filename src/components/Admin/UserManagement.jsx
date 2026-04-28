@@ -125,6 +125,20 @@ export default function UserManagement() {
     }
   };
 
+  const handleGetKevinInfo = async () => {
+    setLoading(true);
+    try {
+      const kevinInfo = await userOperations.getKevinInfo();
+      setSelectedUser(kevinInfo);
+      setActiveTab('details');
+      setMessage('Kevin information retrieved successfully!');
+    } catch (error) {
+      setMessage('Error fetching Kevin info: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">User Management</h1>

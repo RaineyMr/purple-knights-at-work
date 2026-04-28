@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -43,12 +43,112 @@ export const db = {
 
   // Job functions
   async getJobs(filters = {}, page = 1, limit = 10) {
-    // Use secure API instead of direct Supabase access
-    const { jobsAPI } = await import('../api/jobs');
-    const response = await jobsAPI.getJobs(page, limit);
+    // Mock job data for demo purposes
+    const mockJobs = [
+      {
+        id: '1',
+        title: 'Senior Frontend Developer',
+        description: 'We are looking for an experienced frontend developer to join our growing team. You will be working on cutting-edge web applications using React, TypeScript, and modern CSS frameworks.',
+        company: {
+          name: 'Tech Innovations Inc.',
+          logo_url: null,
+          website: 'https://techinnovations.com'
+        },
+        location: 'New York, NY',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_range: '$80k-$120k',
+        experience_level: 'senior_level',
+        skills: ['React', 'TypeScript', 'CSS', 'JavaScript'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        url: 'https://example.com/job1'
+      },
+      {
+        id: '2',
+        title: 'Product Manager',
+        description: 'Join our product team to help shape the future of our platform. You will work closely with engineering, design, and business teams to deliver exceptional user experiences.',
+        company: {
+          name: 'Digital Solutions LLC',
+          logo_url: null,
+          website: 'https://digitalsolutions.com'
+        },
+        location: 'San Francisco, CA',
+        job_type: 'full_time',
+        remote_option: 'fully_remote',
+        salary_range: '$100k-$150k',
+        experience_level: 'mid_level',
+        skills: ['Product Management', 'Agile', 'Analytics', 'Communication'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+        url: 'https://example.com/job2'
+      },
+      {
+        id: '3',
+        title: 'UX Designer',
+        description: 'We are seeking a talented UX designer to create beautiful and intuitive user interfaces. Experience with design systems and user research is essential.',
+        company: {
+          name: 'Creative Studios',
+          logo_url: null,
+          website: 'https://creativestudios.com'
+        },
+        location: 'Remote',
+        job_type: 'contract',
+        remote_option: 'fully_remote',
+        salary_range: '$60k-$80k',
+        experience_level: 'mid_level',
+        skills: ['Figma', 'User Research', 'Prototyping', 'Design Systems'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        created_at: new Date(Date.now() - 259200000).toISOString(),
+        url: 'https://example.com/job3'
+      },
+      {
+        id: '4',
+        title: 'Backend Engineer',
+        description: 'Looking for a skilled backend engineer to build scalable APIs and services. Experience with Node.js, Python, and cloud platforms is required.',
+        company: {
+          name: 'Cloud Systems Inc',
+          logo_url: null,
+          website: 'https://cloudsystems.com'
+        },
+        location: 'Austin, TX',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_range: '$90k-$130k',
+        experience_level: 'senior_level',
+        skills: ['Node.js', 'Python', 'AWS', 'PostgreSQL'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        created_at: new Date(Date.now() - 345600000).toISOString(),
+        url: 'https://example.com/job4'
+      },
+      {
+        id: '5',
+        title: 'Marketing Coordinator',
+        description: 'Join our marketing team to help promote our products and services. You will be responsible for social media, content creation, and campaign management.',
+        company: {
+          name: 'Growth Agency',
+          logo_url: null,
+          website: 'https://growthagency.com'
+        },
+        location: 'Boston, MA',
+        job_type: 'part_time',
+        remote_option: 'on_site',
+        salary_range: '$40k-$60k',
+        experience_level: 'entry_level',
+        skills: ['Social Media', 'Content Writing', 'Analytics', 'Campaign Management'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        created_at: new Date(Date.now() - 432000000).toISOString(),
+        url: 'https://example.com/job5'
+      }
+    ];
     
     // Apply filters if provided
-    let filteredJobs = response.jobs;
+    let filteredJobs = mockJobs;
     
     if (filters.location) {
       filteredJobs = filteredJobs.filter(job => 
@@ -68,17 +168,89 @@ export const db = {
       );
     }
     
-    // Return in the same format as the API
+    // Pagination
+    const totalJobs = filteredJobs.length;
+    const totalPages = Math.ceil(totalJobs / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+    
     return {
-      jobs: filteredJobs,
-      pagination: response.pagination
+      jobs: paginatedJobs,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalJobs,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      }
     };
   },
 
   async getJob(jobId) {
-    // Use secure API instead of direct Supabase access
-    const { jobsAPI } = await import('../api/jobs');
-    const job = await jobsAPI.getJob(jobId);
+    // Mock job data for demo purposes
+    const mockJobs = [
+      {
+        id: '1',
+        title: 'Senior Frontend Developer',
+        description: 'We are looking for an experienced frontend developer to join our growing team. You will be working on cutting-edge web applications using React, TypeScript, and modern CSS frameworks.\n\nResponsibilities:\n- Develop responsive web applications using React and TypeScript\n- Collaborate with design and backend teams\n- Write clean, maintainable code\n- Participate in code reviews and mentoring\n\nRequirements:\n- 5+ years of experience with frontend development\n- Strong proficiency in React, TypeScript, and modern CSS\n- Experience with state management libraries\n- Knowledge of web performance optimization\n- Excellent communication and teamwork skills',
+        company: {
+          name: 'Tech Innovations Inc.',
+          logo_url: null,
+          website: 'https://techinnovations.com',
+          description: 'A leading technology company specializing in innovative web solutions.',
+          location: 'New York, NY',
+          industry: 'Technology'
+        },
+        location: 'New York, NY',
+        job_type: 'full_time',
+        remote_option: 'hybrid',
+        salary_min: 80000,
+        salary_max: 120000,
+        salary_range: '$80k-$120k',
+        experience_level: 'senior_level',
+        skills: ['React', 'TypeScript', 'CSS', 'JavaScript', 'State Management'],
+        required_skills: ['React', 'TypeScript'],
+        preferred_skills: ['CSS', 'JavaScript', 'State Management'],
+        responsibilities: ['Develop web applications', 'Code reviews', 'Mentoring'],
+        alumni_preferred: true,
+        alumni_affiliation: 'Purple Knights Alumni Network',
+        deadline: new Date(Date.now() + 2592000000).toISOString(),
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        url: 'https://example.com/job1'
+      },
+      {
+        id: '2',
+        title: 'Product Manager',
+        description: 'Join our product team to help shape the future of our platform. You will work closely with engineering, design, and business teams to deliver exceptional user experiences.\n\nResponsibilities:\n- Define product requirements and user stories\n- Work with cross-functional teams to deliver features\n- Analyze user feedback and market trends\n- Manage product roadmap and prioritization\n\nRequirements:\n- 3+ years of product management experience\n- Strong analytical and communication skills\n- Experience with agile methodologies\n- Ability to work with technical and non-technical stakeholders',
+        company: {
+          name: 'Digital Solutions LLC',
+          logo_url: null,
+          website: 'https://digitalsolutions.com',
+          description: 'A digital transformation company helping businesses leverage technology.',
+          location: 'San Francisco, CA',
+          industry: 'Software'
+        },
+        location: 'San Francisco, CA',
+        job_type: 'full_time',
+        remote_option: 'fully_remote',
+        salary_min: 100000,
+        salary_max: 150000,
+        salary_range: '$100k-$150k',
+        experience_level: 'mid_level',
+        skills: ['Product Management', 'Agile', 'Analytics', 'Communication'],
+        required_skills: ['Product Management'],
+        preferred_skills: ['Agile', 'Analytics', 'Communication'],
+        responsibilities: ['Product strategy', 'User research', 'Stakeholder management'],
+        alumni_preferred: false,
+        alumni_affiliation: null,
+        deadline: new Date(Date.now() + 2592000000).toISOString(),
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+        url: 'https://example.com/job2'
+      }
+    ];
+    
+    const job = mockJobs.find(j => j.id === jobId);
     
     if (!job) {
       throw new Error('Job not found');
@@ -175,11 +347,14 @@ export const db = {
   async getMessages(userId, otherUserId = null) {
     let query = supabase
       .from('messages')
-      .select('*, sender:profiles(first_name, last_name, profile_photo_url), receiver:profiles(first_name, last_name, profile_photo_url)')
-      .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
+      .select('*');
 
     if (otherUserId) {
-      query = query.or(`from_user_id.eq.${otherUserId},to_user_id.eq.${otherUserId}`);
+      // Get messages between two specific users
+      query = query.or(`(from_user_id.eq.${userId},to_user_id.eq.${otherUserId}),from_user_id.eq.${otherUserId},to_user_id.eq.${userId}`);
+    } else {
+      // Get all messages involving the current user
+      query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
     }
 
     const { data, error } = await query.order('sent_at', { ascending: true });
