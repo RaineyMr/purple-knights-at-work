@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { BriefcaseIcon } from '@heroicons/react/24/outline';
+import { BookmarkIcon, EyeIcon } from '@heroicons/react/24/outline';
 
-export default function JobBoard() {
+export default function SavedJobs() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('saved'); // 'saved' or 'viewed'
   const [filters, setFilters] = useState({
     company_id: '',
     job_type: '',
@@ -23,7 +24,7 @@ export default function JobBoard() {
 
   useEffect(() => {
     fetchJobs();
-  }, [filters, currentPage]);
+  }, [filters, currentPage, viewMode]);
 
   const fetchJobs = async () => {
     try {
@@ -32,23 +33,29 @@ export default function JobBoard() {
       if (filters.job_type) activeFilters.job_type = filters.job_type;
       if (filters.location) activeFilters.location = filters.location;
 
-      // Fetch all jobs (mock for now)
-      const response = await getAllJobs(activeFilters, currentPage, 10);
+      let response;
+      if (viewMode === 'saved') {
+        // Fetch saved jobs (mock for now)
+        response = await getSavedJobs(activeFilters, currentPage, 10);
+      } else {
+        // Fetch viewed jobs (mock for now)
+        response = await getViewedJobs(activeFilters, currentPage, 10);
+      }
       
       setJobs(response.jobs);
       setPagination(response.pagination);
     } catch (error) {
-      console.error('Error fetching jobs:', error);
+      console.error('Error fetching saved jobs:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getAllJobs = async (filters, page, limit) => {
-    // Mock all jobs data
-    const mockAllJobs = [
+  const getSavedJobs = async (filters, page, limit) => {
+    // Mock saved jobs data
+    const mockSavedJobs = [
       {
-        id: 'job-1',
+        id: 'saved-1',
         title: 'Senior Frontend Developer',
         company: { name: 'Tech Innovations Inc.' },
         location: 'New York, NY',
@@ -63,7 +70,7 @@ export default function JobBoard() {
         url: 'https://example.com/job1'
       },
       {
-        id: 'job-2',
+        id: 'saved-2',
         title: 'Product Manager',
         company: { name: 'Digital Solutions LLC' },
         location: 'San Francisco, CA',
@@ -76,9 +83,26 @@ export default function JobBoard() {
         skills: ['Product Management', 'Agile', 'Analytics'],
         created_at: new Date(Date.now() - 172800000).toISOString(),
         url: 'https://example.com/job2'
-      },
+      }
+    ];
+
+    return {
+      jobs: mockSavedJobs,
+      pagination: {
+        currentPage: page,
+        totalPages: 1,
+        totalJobs: mockSavedJobs.length,
+        hasNextPage: false,
+        hasPreviousPage: page > 1
+      }
+    };
+  };
+
+  const getViewedJobs = async (filters, page, limit) => {
+    // Mock viewed jobs data
+    const mockViewedJobs = [
       {
-        id: 'job-3',
+        id: 'viewed-1',
         title: 'UX Designer',
         company: { name: 'Creative Agency' },
         location: 'Austin, TX',
@@ -93,7 +117,7 @@ export default function JobBoard() {
         url: 'https://example.com/job3'
       },
       {
-        id: 'job-4',
+        id: 'viewed-2',
         title: 'Backend Engineer',
         company: { name: 'StartupXYZ' },
         location: 'Remote',
@@ -108,7 +132,7 @@ export default function JobBoard() {
         url: 'https://example.com/job4'
       },
       {
-        id: 'job-5',
+        id: 'viewed-3',
         title: 'Marketing Coordinator',
         company: { name: 'Global Marketing Corp' },
         location: 'Chicago, IL',
@@ -123,7 +147,7 @@ export default function JobBoard() {
         url: 'https://example.com/job5'
       },
       {
-        id: 'job-6',
+        id: 'viewed-4',
         title: 'Data Scientist',
         company: { name: 'Data Analytics Inc' },
         location: 'Boston, MA',
@@ -138,50 +162,34 @@ export default function JobBoard() {
         url: 'https://example.com/job6'
       },
       {
-        id: 'job-7',
-        title: 'Full Stack Developer',
-        company: { name: 'Enterprise Solutions' },
-        location: 'Seattle, WA',
+        id: 'viewed-5',
+        title: 'Mobile App Developer',
+        company: { name: 'AppWorks Studio' },
+        location: 'San Francisco, CA',
         job_type: 'full_time',
-        description: 'We need a versatile full stack developer to work on our flagship product.',
+        description: 'Build amazing mobile experiences for iOS and Android platforms.',
         salary_range: '$100,000 - $140,000',
         remote_option: 'hybrid',
         experience_level: 'mid_level',
         alumni_preferred: false,
-        skills: ['JavaScript', 'React', 'Node.js', 'PostgreSQL'],
+        skills: ['React Native', 'iOS', 'Android', 'TypeScript'],
         created_at: new Date(Date.now() - 604800000).toISOString(),
         url: 'https://example.com/job7'
-      },
-      {
-        id: 'job-8',
-        title: 'DevOps Engineer',
-        company: { name: 'Cloud Infrastructure Co' },
-        location: 'Remote',
-        job_type: 'full_time',
-        description: 'Help us build and maintain scalable cloud infrastructure.',
-        salary_range: '$120,000 - $160,000',
-        remote_option: 'remote',
-        experience_level: 'senior',
-        alumni_preferred: true,
-        skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD'],
-        created_at: new Date(Date.now() - 691200000).toISOString(),
-        url: 'https://example.com/job8'
       }
     ];
 
     return {
-      jobs: mockAllJobs,
+      jobs: mockViewedJobs,
       pagination: {
         currentPage: page,
         totalPages: 1,
-        totalJobs: mockAllJobs.length,
+        totalJobs: mockViewedJobs.length,
         hasNextPage: false,
         hasPreviousPage: page > 1
       }
     };
   };
 
-  
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({
       ...prev,
@@ -291,7 +299,7 @@ export default function JobBoard() {
       <div className="max-w-6xl mx-auto p-6">
         <div className="text-center py-8">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-gray-600">Loading jobs...</p>
+          <p className="mt-2 text-gray-600">Loading {viewMode === 'saved' ? 'saved' : 'viewed'} jobs...</p>
         </div>
       </div>
     );
@@ -299,14 +307,48 @@ export default function JobBoard() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="flex items-center space-x-3 mb-8">
-        <BriefcaseIcon className="h-8 w-8 text-blue-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Job Board</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-3">
+          {viewMode === 'saved' ? (
+            <BookmarkIcon className="h-8 w-8 text-amber-600" />
+          ) : (
+            <EyeIcon className="h-8 w-8 text-blue-600" />
+          )}
+          <h1 className="text-3xl font-bold text-gray-900">
+            {viewMode === 'saved' ? 'Saved Jobs' : 'Viewed Jobs'}
+          </h1>
+        </div>
+        
+        {/* Saved vs Viewed Toggle */}
+        <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('saved')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'saved'
+                ? 'bg-white text-amber-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <BookmarkIcon className="h-4 w-4" />
+            <span>Saved Jobs</span>
+          </button>
+          <button
+            onClick={() => setViewMode('viewed')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'viewed'
+                ? 'bg-white text-blue-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <EyeIcon className="h-4 w-4" />
+            <span>Viewed Jobs</span>
+          </button>
+        </div>
       </div>
       
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Filter Jobs</h2>
+        <h2 className="text-lg font-semibold mb-4">Filter {viewMode === 'saved' ? 'Saved' : 'Viewed'} Jobs</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -356,16 +398,31 @@ export default function JobBoard() {
       <div className="space-y-4">
         {jobs.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <BriefcaseIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-            <p className="text-gray-600">
-              No jobs match your current filters. Try adjusting your search criteria.
+            {viewMode === 'saved' ? (
+              <BookmarkIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            ) : (
+              <EyeIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            )}
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No {viewMode === 'saved' ? 'saved' : 'viewed'} jobs yet
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {viewMode === 'saved' 
+                ? 'Start exploring the job board and save jobs that interest you.'
+                : 'Start exploring the job board to build your viewing history.'
+              }
             </p>
+            <a
+              href="/jobs"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Browse All Jobs
+            </a>
           </div>
         ) : (
           <>
             <div className="text-sm text-gray-600 mb-4">
-              Showing {jobs.length} of {pagination.totalJobs} jobs (Page {pagination.currentPage} of {pagination.totalPages})
+              Showing {jobs.length} of {pagination.totalJobs} {viewMode === 'saved' ? 'saved' : 'viewed'} jobs (Page {pagination.currentPage} of {pagination.totalPages})
             </div>
             {jobs.map((job) => (
             <div key={job.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -422,7 +479,7 @@ export default function JobBoard() {
                   )}
                 </div>
                 <div className="text-sm text-gray-500">
-                  Posted {new Date(job.created_at).toLocaleDateString()}
+                  {viewMode === 'saved' ? 'Saved' : 'Viewed'} {new Date(job.created_at).toLocaleDateString()}
                 </div>
               </div>
 

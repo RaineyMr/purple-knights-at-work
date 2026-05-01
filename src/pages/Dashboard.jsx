@@ -437,7 +437,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Jobs Button */}
             <div 
-              onClick={() => navigate('/jobs')}
+              onClick={() => navigate('/saved-jobs')}
               className="text-center p-4 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors"
               title="View saved jobs"
             >

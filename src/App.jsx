@@ -18,6 +18,7 @@ import ForgotPassword from './pages/Auth/ForgotPassword.jsx';
 // Main Pages (unified user experience)
 import Dashboard from './pages/Dashboard.jsx';
 import JobBoard from './pages/JobBoard.jsx';
+import SavedJobs from './pages/SavedJobs.jsx';
 import JobDetail from './pages/JobDetail.jsx';
 import UserProfile from './pages/UserProfile.jsx';
 import CompanyProfile from './pages/CompanyProfile.jsx';
@@ -53,6 +54,7 @@ function App() {
               {/* Job Routes */}
               <Route path="jobs" element={<JobBoard />} />
               <Route path="jobs/:id" element={<JobDetail />} />
+              <Route path="saved-jobs" element={<SavedJobs />} />
               <Route path="post-job" element={<PostJob />} />
               <Route path="applications" element={<Applications />} />
               
