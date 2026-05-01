@@ -27,6 +27,7 @@ import Messages from './pages/Messages.jsx';
 import Applications from './pages/Applications.jsx';
 import PostJob from './pages/PostJob.jsx';
 import Settings from './pages/Settings.jsx';
+import Reports from './pages/Reports.jsx';
 
 // Protected Route Component
 import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
@@ -68,6 +69,7 @@ function App() {
               <Route path="messages" element={<Messages />} />
               <Route path="messages/:userId" element={<Messages />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="reports" element={<Reports />} />
             </Route>
             
             {/* Fallback */}

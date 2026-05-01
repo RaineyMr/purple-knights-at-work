@@ -31,9 +31,31 @@ export const clearAllAuthData = () => {
 };
 
 export const isAuthError = (error) => {
-  return error?.message?.includes('Invalid Refresh Token') ||
-         error?.message?.includes('Refresh Token Not Found') ||
-         error?.message?.includes('AuthApiError') ||
-         error?.message?.includes('401') ||
-         error?.status === 400;
+  if (!error) return false;
+  
+  const message = error.message || error.toString() || '';
+  const status = error.status;
+  
+  // More specific auth error patterns
+  const authErrorPatterns = [
+    'Invalid Refresh Token',
+    'Refresh Token Not Found',
+    'Invalid session',
+    'Session expired',
+    'Authentication failed'
+  ];
+  
+  // Check for specific auth error messages
+  const hasAuthErrorMessage = authErrorPatterns.some(pattern => 
+    message.toLowerCase().includes(pattern.toLowerCase())
+  );
+  
+  // Check for specific HTTP status codes
+  const isAuthStatus = status === 401 || status === 403;
+  
+  // Check for Supabase specific auth errors
+  const isSupabaseAuthError = message.includes('supabase') && 
+    (message.includes('auth') || message.includes('token'));
+  
+  return hasAuthErrorMessage || isAuthStatus || isSupabaseAuthError;
 };

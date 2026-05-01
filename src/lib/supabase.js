@@ -573,7 +573,7 @@ export const db = {
         query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
       }
 
-      const { data, error } = await query.order('sent_at', { ascending: true });
+      const { data, error } = await query.order('created_at', { ascending: true });
       
       if (error) throw error;
       
@@ -601,7 +601,7 @@ export const db = {
         to_user_id: userId,
         subject: 'Interview Request - Frontend Developer Position',
         body: 'Hi Kevin, thank you for your application! We were impressed with your background and would like to schedule an interview. Are you available next week for a video call with our tech lead?',
-        sent_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         read_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         context: 'job_application',
         context_id: 'mock-app-1'
@@ -690,32 +690,56 @@ export const db = {
     try {
       const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
       
-      // Get analytics events
-      const { data: events, error: eventsError } = await supabase
-        .from('analytics_events')
-        .select('event_type, entity_type, timestamp')
-        .eq('user_id', userId)
-        .gte('timestamp', cutoffDate);
+      // Get analytics events - with error handling for missing table
+      let events = [];
+      try {
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('analytics_events')
+          .select('event_type, entity_type, timestamp')
+          .eq('user_id', userId)
+          .gte('timestamp', cutoffDate);
+        
+        if (eventsError) throw eventsError;
+        events = eventsData || [];
+      } catch (eventsError) {
+        console.warn('Analytics events table not available or query failed:', eventsError.message);
+        // Use empty events array as fallback
+        events = [];
+      }
       
-      if (eventsError) throw eventsError;
+      // Get applications - with error handling for missing table
+      let applications = [];
+      try {
+        const { data: applicationsData, error: applicationsError } = await supabase
+          .from('applications')
+          .select('status, application_date')
+          .eq('profile_id', userId)
+          .gte('application_date', cutoffDate);
+        
+        if (applicationsError) throw applicationsError;
+        applications = applicationsData || [];
+      } catch (applicationsError) {
+        console.warn('Applications table not available or query failed:', applicationsError.message);
+        // Use empty applications array as fallback
+        applications = [];
+      }
       
-      // Get applications
-      const { data: applications, error: applicationsError } = await supabase
-        .from('applications')
-        .select('status, application_date')
-        .eq('profile_id', userId)
-        .gte('application_date', cutoffDate);
-      
-      if (applicationsError) throw applicationsError;
-      
-      // Get messages
-      const { data: messages, error: messagesError } = await supabase
-        .from('messages')
-        .select('sent_at, from_user_id, to_user_id')
-        .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
-        .gte('sent_at', cutoffDate);
-      
-      if (messagesError) throw messagesError;
+      // Get messages - with error handling for missing table
+      let messages = [];
+      try {
+        const { data: messagesData, error: messagesError } = await supabase
+          .from('messages')
+          .select('created_at, from_user_id, to_user_id')
+          .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
+          .gte('created_at', cutoffDate);
+        
+        if (messagesError) throw messagesError;
+        messages = messagesData || [];
+      } catch (messagesError) {
+        console.warn('Messages table not available or query failed:', messagesError.message);
+        // Use empty messages array as fallback
+        messages = [];
+      }
       
       // Process analytics events
       const jobViews = events.filter(e => e.event_type === 'job_view' && e.entity_type === 'job').length;

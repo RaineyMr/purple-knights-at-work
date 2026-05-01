@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { clearAllAuthData, isAuthError } from '../../utils/authCleanup';
 
@@ -6,11 +6,19 @@ export const AuthErrorHandler = ({ children }) => {
   const { clearCorruptedSession } = useAuth();
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const isHandlingError = useRef(false);
+  const originalConsoleError = useRef(null);
 
   useEffect(() => {
+    // Prevent recursive error handling
+    if (isHandlingError.current) return;
+    
     // Listen for Supabase auth errors
     const handleAuthError = (event) => {
+      if (isHandlingError.current) return;
+      
       if (isAuthError(event.detail)) {
+        isHandlingError.current = true;
         setErrorMessage('Your session has expired. Please sign in again.');
         setShowError(true);
       }
@@ -18,23 +26,40 @@ export const AuthErrorHandler = ({ children }) => {
 
     // Listen for unhandled promise rejections
     const handleUnhandledRejection = (event) => {
+      if (isHandlingError.current) return;
+      
       if (isAuthError(event.reason)) {
+        isHandlingError.current = true;
         setErrorMessage('Your session has expired. Please sign in again.');
         setShowError(true);
         event.preventDefault();
       }
     };
 
-    // Listen for console errors (catch any missed auth errors)
-    const originalError = console.error;
-    console.error = (...args) => {
-      const errorString = args.join(' ');
-      if (isAuthError({ message: errorString })) {
-        setErrorMessage('Your session has expired. Please sign in again.');
-        setShowError(true);
+    // Safely listen for console errors with better error detection
+    const safeConsoleError = (...args) => {
+      try {
+        const errorString = args.join(' ');
+        
+        // Only trigger on specific auth-related errors, not all errors
+        if (isAuthError({ message: errorString }) && !isHandlingError.current) {
+          isHandlingError.current = true;
+          setErrorMessage('Your session has expired. Please sign in again.');
+          setShowError(true);
+        }
+      } catch (err) {
+        // Prevent errors in the error handler itself
       }
-      originalError.apply(console, args);
+      
+      // Always call the original console.error
+      if (originalConsoleError.current) {
+        originalConsoleError.current.apply(console, args);
+      }
     };
+
+    // Store original console.error and replace it safely
+    originalConsoleError.current = console.error;
+    console.error = safeConsoleError;
 
     window.addEventListener('supabase.auth.error', handleAuthError);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
@@ -42,17 +67,29 @@ export const AuthErrorHandler = ({ children }) => {
     return () => {
       window.removeEventListener('supabase.auth.error', handleAuthError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      console.error = originalError;
+      
+      // Restore original console.error
+      if (originalConsoleError.current) {
+        console.error = originalConsoleError.current;
+      }
     };
   }, []);
 
   const handleClearSession = async () => {
-    clearAllAuthData();
-    await clearCorruptedSession();
-    setShowError(false);
-    setErrorMessage('');
-    // Reload the page to clear any remaining auth state
-    window.location.reload();
+    try {
+      clearAllAuthData();
+      await clearCorruptedSession();
+      setShowError(false);
+      setErrorMessage('');
+      // Reset error handling flag
+      isHandlingError.current = false;
+      // Reload the page to clear any remaining auth state
+      window.location.reload();
+    } catch (error) {
+      console.error('Error clearing session:', error);
+      // Force reload even if there's an error
+      window.location.reload();
+    }
   };
 
   if (!showError) {

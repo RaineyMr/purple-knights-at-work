@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
+import { BookmarkIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 export default function JobBoard() {
+  const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState('saved'); // 'saved' or 'viewed'
   const [filters, setFilters] = useState({
     company_id: '',
     job_type: '',
@@ -20,7 +24,7 @@ export default function JobBoard() {
 
   useEffect(() => {
     fetchJobs();
-  }, [filters, currentPage]);
+  }, [filters, currentPage, viewMode]);
 
   const fetchJobs = async () => {
     try {
@@ -29,7 +33,15 @@ export default function JobBoard() {
       if (filters.job_type) activeFilters.job_type = filters.job_type;
       if (filters.location) activeFilters.location = filters.location;
 
-      const response = await db.getJobs(activeFilters, currentPage, 10);
+      let response;
+      if (viewMode === 'saved') {
+        // Fetch saved jobs (mock for now)
+        response = await getSavedJobs(activeFilters, currentPage, 10);
+      } else {
+        // Fetch viewed jobs (mock for now)
+        response = await getViewedJobs(activeFilters, currentPage, 10);
+      }
+      
       setJobs(response.jobs);
       setPagination(response.pagination);
     } catch (error) {
@@ -37,6 +49,130 @@ export default function JobBoard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getSavedJobs = async (filters, page, limit) => {
+    // Mock saved jobs data
+    const mockSavedJobs = [
+      {
+        id: 'saved-1',
+        title: 'Senior Frontend Developer',
+        company: { name: 'Tech Innovations Inc.' },
+        location: 'New York, NY',
+        job_type: 'full_time',
+        description: 'We are looking for an experienced frontend developer to join our team and help build amazing user experiences.',
+        salary_range: '$120,000 - $160,000',
+        remote_option: 'hybrid',
+        experience_level: 'senior',
+        alumni_preferred: true,
+        skills: ['React', 'TypeScript', 'CSS', 'JavaScript'],
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        url: 'https://example.com/job1'
+      },
+      {
+        id: 'saved-2',
+        title: 'Product Manager',
+        company: { name: 'Digital Solutions LLC' },
+        location: 'San Francisco, CA',
+        job_type: 'full_time',
+        description: 'Join our product team to help shape the future of our platform and drive product strategy.',
+        salary_range: '$130,000 - $180,000',
+        remote_option: 'remote',
+        experience_level: 'mid_level',
+        alumni_preferred: false,
+        skills: ['Product Management', 'Agile', 'Analytics'],
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+        url: 'https://example.com/job2'
+      }
+    ];
+
+    return {
+      jobs: mockSavedJobs,
+      pagination: {
+        currentPage: page,
+        totalPages: 1,
+        totalJobs: mockSavedJobs.length,
+        hasNextPage: false,
+        hasPreviousPage: page > 1
+      }
+    };
+  };
+
+  const getViewedJobs = async (filters, page, limit) => {
+    // Mock viewed jobs data
+    const mockViewedJobs = [
+      {
+        id: 'viewed-1',
+        title: 'UX Designer',
+        company: { name: 'Creative Agency' },
+        location: 'Austin, TX',
+        job_type: 'full_time',
+        description: 'Looking for a talented UX designer to create beautiful and intuitive user interfaces.',
+        salary_range: '$90,000 - $120,000',
+        remote_option: 'onsite',
+        experience_level: 'mid_level',
+        alumni_preferred: false,
+        skills: ['Figma', 'User Research', 'Prototyping'],
+        created_at: new Date(Date.now() - 259200000).toISOString(),
+        url: 'https://example.com/job3'
+      },
+      {
+        id: 'viewed-2',
+        title: 'Backend Engineer',
+        company: { name: 'StartupXYZ' },
+        location: 'Remote',
+        job_type: 'full_time',
+        description: 'Join our backend team to build scalable APIs and services.',
+        salary_range: '$110,000 - $150,000',
+        remote_option: 'remote',
+        experience_level: 'mid_level',
+        alumni_preferred: true,
+        skills: ['Node.js', 'Python', 'AWS'],
+        created_at: new Date(Date.now() - 345600000).toISOString(),
+        url: 'https://example.com/job4'
+      },
+      {
+        id: 'viewed-3',
+        title: 'Marketing Coordinator',
+        company: { name: 'Global Marketing Corp' },
+        location: 'Chicago, IL',
+        job_type: 'full_time',
+        description: 'Help coordinate marketing campaigns and drive brand awareness.',
+        salary_range: '$70,000 - $90,000',
+        remote_option: 'hybrid',
+        experience_level: 'entry_level',
+        alumni_preferred: false,
+        skills: ['Marketing', 'Social Media', 'Analytics'],
+        created_at: new Date(Date.now() - 432000000).toISOString(),
+        url: 'https://example.com/job5'
+      },
+      {
+        id: 'viewed-4',
+        title: 'Data Scientist',
+        company: { name: 'Data Analytics Inc' },
+        location: 'Boston, MA',
+        job_type: 'full_time',
+        description: 'Apply machine learning and statistical analysis to solve complex business problems.',
+        salary_range: '$130,000 - $170,000',
+        remote_option: 'remote',
+        experience_level: 'senior',
+        alumni_preferred: true,
+        skills: ['Python', 'Machine Learning', 'SQL'],
+        created_at: new Date(Date.now() - 518400000).toISOString(),
+        url: 'https://example.com/job6'
+      }
+    ];
+
+    return {
+      jobs: mockViewedJobs,
+      pagination: {
+        currentPage: page,
+        totalPages: 1,
+        totalJobs: mockViewedJobs.length,
+        hasNextPage: false,
+        hasPreviousPage: page > 1
+      }
+    };
   };
 
   const handleFilterChange = (field, value) => {
@@ -156,7 +292,35 @@ export default function JobBoard() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Job Board</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Job Board</h1>
+        
+        {/* Saved vs Viewed Toggle */}
+        <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('saved')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'saved'
+                ? 'bg-white text-amber-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <BookmarkIcon className="h-4 w-4" />
+            <span>Saved Jobs</span>
+          </button>
+          <button
+            onClick={() => setViewMode('viewed')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'viewed'
+                ? 'bg-white text-blue-700 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <EyeIcon className="h-4 w-4" />
+            <span>Viewed Jobs</span>
+          </button>
+        </div>
+      </div>
       
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -210,7 +374,9 @@ export default function JobBoard() {
       <div className="space-y-4">
         {jobs.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-600">No jobs found matching your criteria.</p>
+            <p className="text-gray-600">
+              No {viewMode === 'saved' ? 'saved' : 'viewed'} jobs found matching your criteria.
+            </p>
           </div>
         ) : (
           <>

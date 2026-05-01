@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { BriefcaseIcon, UserGroupIcon, NewspaperIcon, ChatBubbleLeftIcon, EyeIcon, BookmarkIcon, HeartIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
+import { BriefcaseIcon, UserGroupIcon, NewspaperIcon, ChatBubbleLeftIcon, EyeIcon, BookmarkIcon, HeartIcon, CalendarIcon, MapPinIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -244,6 +246,7 @@ export default function Dashboard() {
         ...prev,
         currentPage,
         totalPages,
+        totalItems,
         hasNextPage: currentPage < totalPages,
         hasPreviousPage: currentPage > 1
       }));
@@ -321,7 +324,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-center space-x-2 mt-8">
         <button
           onClick={() => handlePageChange(1)}
-          disabled={!pagination.hasPreviousPage}
+          disabled={currentPage <= 1}
           className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           First
@@ -329,7 +332,7 @@ export default function Dashboard() {
         
         <button
           onClick={() => handlePageChange(currentPage - 1)}
-          disabled={!pagination.hasPreviousPage}
+          disabled={currentPage <= 1}
           className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
@@ -375,7 +378,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => handlePageChange(currentPage + 1)}
-          disabled={!pagination.hasNextPage}
+          disabled={currentPage >= pagination.totalPages}
           className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next
@@ -383,7 +386,7 @@ export default function Dashboard() {
 
         <button
           onClick={() => handlePageChange(pagination.totalPages)}
-          disabled={!pagination.hasNextPage}
+          disabled={currentPage >= pagination.totalPages}
           className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Last
@@ -432,22 +435,42 @@ export default function Dashboard() {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900">Your Activity Summary</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <EyeIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-purple-900">{analytics.jobViews}</p>
-              <p className="text-sm text-purple-700">Job Views</p>
-            </div>
-            <div className="text-center p-4 bg-amber-50 rounded-lg">
+            {/* Jobs Button */}
+            <div 
+              onClick={() => navigate('/jobs')}
+              className="text-center p-4 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors"
+              title="View saved jobs"
+            >
               <BookmarkIcon className="h-8 w-8 text-amber-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-amber-900">{analytics.jobSaves}</p>
-              <p className="text-sm text-amber-700">Job Saves</p>
+              <p className="text-sm text-amber-700">Saved Jobs</p>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
+            
+            {/* Reports Button */}
+            <div 
+              onClick={() => navigate('/reports')}
+              className="text-center p-4 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
+              title="Generate job search reports"
+            >
+              <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+              <p className="text-2xl font-bold text-purple-900">Reports</p>
+              <p className="text-sm text-purple-700">Analytics</p>
+            </div>
+            
+            <div 
+              onClick={() => navigate('/applications')}
+              className="text-center p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors"
+              title="View applications"
+            >
               <BriefcaseIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-green-900">{analytics.applications.applied}</p>
               <p className="text-sm text-green-700">Applications</p>
             </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div 
+              onClick={() => navigate('/messages')}
+              className="text-center p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+              title="View messages"
+            >
               <ChatBubbleLeftIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-blue-900">{analytics.messages.total}</p>
               <p className="text-sm text-blue-700">Messages</p>

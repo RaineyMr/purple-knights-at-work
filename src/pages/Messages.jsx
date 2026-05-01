@@ -91,21 +91,21 @@ export default function Messages() {
         {
           id: '1',
           body: 'Hey! How are you doing?',
-          sent_at: new Date(Date.now() - 3600000).toISOString(),
+          created_at: new Date(Date.now() - 3600000).toISOString(),
           from_user_id: conversationId,
           to_user_id: user.id
         },
         {
           id: '2',
           body: 'I\'m doing great! Just working on some new features.',
-          sent_at: new Date(Date.now() - 3000000).toISOString(),
+          created_at: new Date(Date.now() - 3000000).toISOString(),
           from_user_id: user.id,
           to_user_id: conversationId
         },
         {
           id: '3',
           body: 'That\'s awesome! What are you working on?',
-          sent_at: new Date(Date.now() - 2400000).toISOString(),
+          created_at: new Date(Date.now() - 2400000).toISOString(),
           from_user_id: conversationId,
           to_user_id: user.id
         }
@@ -162,7 +162,7 @@ export default function Messages() {
         const newMessage = {
           id: Date.now().toString(),
           body: messageInput.trim(),
-          sent_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           from_user_id: user.id,
           to_user_id: selectedConversation
         };
@@ -323,7 +323,7 @@ export default function Messages() {
                       <p className={`text-xs mt-1 ${
                         message.from_user_id === user.id ? 'text-purple-200' : 'text-gray-500'
                       }`}>
-                        {formatTime(message.sent_at)}
+                        {formatTime(message.created_at)}
                       </p>
                     </div>
                   </div>
