@@ -22,7 +22,7 @@ export default function Feed() {
         id: '1',
         type: 'job_posted',
         user: {
-          name: 'Sarah Johnson',
+          name: 'Marcus Johnson',
           avatar: 'SJ',
           role: 'HR Manager at Tech Corp'
         },
@@ -58,7 +58,7 @@ export default function Feed() {
         id: '3',
         type: 'job_applied',
         user: {
-          name: 'Emily Davis',
+          name: 'Jamal Robinson',
           avatar: 'ED',
           role: 'UX Designer'
         },
@@ -82,7 +82,7 @@ export default function Feed() {
         },
         action: 'connected with',
         target: {
-          name: 'Lisa Anderson',
+          name: 'Andre Williams',
           role: 'Product Manager at StartupXYZ'
         },
         timestamp: new Date(Date.now() - 14400000).toISOString(),
@@ -94,7 +94,7 @@ export default function Feed() {
         id: '5',
         type: 'achievement',
         user: {
-          name: 'Jennifer Martinez',
+          name: 'Terrence Davis',
           avatar: 'JM',
           role: 'Data Scientist'
         },
@@ -131,7 +131,7 @@ export default function Feed() {
         id: '7',
         type: 'profile_update',
         user: {
-          name: 'Amanda White',
+          name: 'Malik Thompson',
           avatar: 'AW',
           role: 'Product Designer'
         },

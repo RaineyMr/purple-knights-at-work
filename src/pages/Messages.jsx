@@ -43,7 +43,7 @@ export default function Messages() {
       const mockConversations = [
         {
           id: 'demo-user-1',
-          name: 'Sarah Johnson',
+          name: 'Marcus Johnson',
           avatar: 'SJ',
           role: 'Software Engineer at Tech Corp',
           lastMessage: 'Hey! Are you available for a quick call this afternoon?',
@@ -54,7 +54,7 @@ export default function Messages() {
         },
         {
           id: 'demo-user-2',
-          name: 'Michael Chen',
+          name: 'Terrence Davis',
           avatar: 'MC',
           role: 'Product Manager at StartupXYZ',
           lastMessage: 'Thanks for your help with the project!',
@@ -65,7 +65,7 @@ export default function Messages() {
         },
         {
           id: 'demo-user-3',
-          name: 'Emily Davis',
+          name: 'Andre Williams',
           avatar: 'ED',
           role: 'UX Designer',
           lastMessage: 'I reviewed your portfolio, looks great!',
